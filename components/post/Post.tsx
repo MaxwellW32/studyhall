@@ -7,7 +7,7 @@ import { getPostUser } from '@/utility/serverFunctions/handleUsers'
 import Moment from 'react-moment';
 
 export default function DisplayPost({ seenPost }: { seenPost: usablePost }) {
-    //nice
+
     const [seenAuthor, seenAuthorset] = useState<user | undefined>()
 
     useEffect(() => {
