@@ -1,41 +1,30 @@
 "use server"
 
-import { community, communitySchema, post, postSchema, usablePost } from "@/types";
+import { community, communitySchema, post, postSchema } from "@/types";
 import { v4 as uuidv4 } from "uuid"
 import { connect } from "@planetscale/database"
-import { config } from "@/db/config"
+import { config } from "@/db//config"
+
+import * as schema from '@/db/schema';
 import { posts } from "@/db/schema"
+
 import { drizzle } from "drizzle-orm/planetscale-serverless"
 import { eq } from "drizzle-orm";
 
 
 export async function getAllPosts() {
     const conn = connect(config)
-    const db = drizzle(conn)
+    const db = drizzle(conn, { schema });
 
-    const results = await db.select()
-        .from(posts)
-
+    const results = await db.query.posts.findMany();
     return results
 }
 
-export async function getPostsFromCommunity(communityId: string) {
-    const conn = connect(config)
-    const db = drizzle(conn)
-
-    const results = await db.select()
-        .from(posts)
-        .where(eq(posts.communityId, communityId))
-
-    return results
-}
-
-export async function addPost(seenPost: usablePost) {
-    console.log(`$hi there`, JSON.stringify(seenPost));
-
-    const newPost: post = { ...seenPost, imageUrls: seenPost.imageUrls ? JSON.stringify(seenPost.imageUrls) : seenPost.imageUrls, videoUrls: seenPost.videoUrls ? JSON.stringify(seenPost.videoUrls) : seenPost.videoUrls }
+export async function addPost(seenPost: post) {
+    const newPost = seenPost
     newPost.datePosted = new Date()
-    newPost.userId = "b4aa351c-3f84-4b73-b581-ef5836fdf500"
+    newPost.userId = "b4aa351c-3f84-4b73-b581-ef5836fdf500" //auth script soon
+
     postSchema.parse(newPost)
 
     const conn = connect(config)

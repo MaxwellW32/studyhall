@@ -4,37 +4,58 @@ import { community, communitySchema } from "@/types";
 import { v4 as uuidv4 } from "uuid"
 import { connect } from "@planetscale/database"
 import { config } from "@/db/config"
-import { communities } from "@/db/schema"
+
+import * as schema from "@/db/schema"
+import { communities, posts } from "@/db/schema"
+
 import { drizzle } from "drizzle-orm/planetscale-serverless"
-import { eq } from "drizzle-orm";
+import { eq, desc, asc } from "drizzle-orm";
 import { ZodError } from "zod";
 
 
 export async function getAllCommunities() {
-    console.log(`$ran get all communities`);
-
     const conn = connect(config)
-    const db = drizzle(conn)
+    const db = drizzle(conn, { schema });
 
-    const results = await db.select()
-        .from(communities)
-
-    // .leftJoin(reminders, eq(reminders.todoid, todos.id)) //keep for now as reminder
+    const results = await db.query.communities.findMany({
+        with: {
+            posts: {
+                orderBy: [desc(posts.likes)],
+                limit: 3
+            }
+        }
+    });
 
     return results
 }
 
-
-
 export async function getSpecificCommunity(seenCommunityID: string) {
     const conn = connect(config)
-    const db = drizzle(conn)
 
-    const result = await db.select()
-        .from(communities)
-        .where(eq(communities.id, seenCommunityID))
+    const db = drizzle(conn, { schema });
 
-    return result[0]
+    const result = await db.query.communities.findFirst({
+        where: eq(communities.id, seenCommunityID),
+        with: {
+            posts: {
+                orderBy: [desc(posts.datePosted)],
+                limit: 50,
+                with: {
+                    comments: {
+                        limit: 2,
+                        with: {
+                            fromUser: true,
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // const results = await db.select()
+    //     .from(communities)
+    //     .where(eq(communities.id, seenCommunityID))
+    return result
 }
 
 export async function addCommunity(seenCommunity: community) {
@@ -45,7 +66,6 @@ export async function addCommunity(seenCommunity: community) {
 
     await db.insert(communities).values(seenCommunity);
 }
-
 
 export async function updateCommunity(seenCommunity: community) {
 

@@ -8,14 +8,22 @@ export const users = mysqlTable("users", {
     username: varchar("username", { length: 255 }).notNull().unique(),
     firstName: varchar("first_name", { length: 255 }),
     lastName: varchar("last_name", { length: 255 }),
-});
+},
+    (table) => {
+        return {
+            usernameIdx: index("username_index").on(table.username),
+            userIdIdx: index("user_id_index").on(table.id),
+        }
+    });
 
 export const usersRelations = relations(users, ({ many }) => ({
     posts: many(posts),
     communitiesMade: many(communities),
     studySessionsMade: many(studySessions),
     communitiesJoined: many(usersToCommunities),
-    studySessionsJoined: many(usersToStudySessions)
+    studySessionsJoined: many(usersToStudySessions),
+    comments: many(comments),
+    replies: many(replies)
 }));
 
 
@@ -40,6 +48,10 @@ export const communitiesRelations = relations(communities, ({ one, many }) => ({
     tags: many(tagsToCommunities)
 }));
 
+
+// export type communityTest = typeof communities.$inferSelect;
+// export type userTest = typeof users.$inferSelect;
+// export type postTest = typeof posts.$inferSelect;
 
 
 
@@ -114,7 +126,7 @@ export const postsRelations = relations(posts, ({ many, one }) => ({
         references: [studySessions.id],
     }),
     tags: many(tagsToPosts),
-    replies: many(comments)
+    comments: many(comments)
 }));
 
 
@@ -139,13 +151,60 @@ export const comments = mysqlTable("comments", {
         }
     });
 
-export const commentsRelations = relations(comments, ({ one }) => ({
+export const commentsRelations = relations(comments, ({ one, many }) => ({
     parentPost: one(posts, {
         fields: [comments.postId],
         references: [posts.id],
-    })
+    }),
+    fromUser: one(users, {
+        fields: [comments.userId],
+        references: [users.id],
+    }),
+    replies: many(replies)
 }));
 
+
+
+
+
+
+
+
+
+
+
+
+
+export const replies = mysqlTable("replies", {
+    id: varchar("id", { length: 255 }).primaryKey().notNull(),
+    userId: varchar("user_id", { length: 255 }).notNull(),
+    replyingToUserId: varchar("replying_to_user_id", { length: 255 }).notNull(),
+    commentId: varchar("comment_id", { length: 255 }).notNull(),
+    datePosted: datetime("date_posted").notNull(),
+    message: varchar("message", { length: 255 }).notNull(),
+    likes: int("likes"),
+},
+    (table) => {
+        return {
+            commentIdIdx: index("comment_id_idx").on(table.commentId),
+            replyingToUserIdIdx: index("replying_To_user_id_index").on(table.replyingToUserId),
+        }
+    });
+
+export const repliesRelations = relations(replies, ({ one }) => ({
+    fromComment: one(comments, {
+        fields: [replies.commentId],
+        references: [comments.id],
+    }),
+    fromUser: one(users, {
+        fields: [replies.userId],
+        references: [users.id]
+    }),
+    replyingToUser: one(users, {
+        fields: [replies.replyingToUserId],
+        references: [users.id]
+    })
+}));
 
 
 

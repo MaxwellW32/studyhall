@@ -1,14 +1,33 @@
 "use client"
-import { post, usablePost } from '@/types'
+import { post } from '@/types'
 import { addPost } from '@/utility/serverFunctions/handlePosts'
 import React, { useRef, useState } from 'react'
 import { v4 as uuidv4 } from "uuid"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { ZodError } from 'zod-validation-error'
+import useSeenErrors from '@/utility/useful/useSeenErrors'
+import DisplayYTVideo from '@/utility/useful/DisplayYTVideo'
+import DisplayImage from '@/utility/useful/DisplayImage'
 
 
 
 export default function MakePost({ passedCommunityId, passedStudySessionId }: { passedCommunityId: null | string, passedStudySessionId: null | string }) {
+    const queryClient = useQueryClient()
 
-    const postInitialValues: usablePost = {
+    const [seenErrInput, seenErrInputSet] = useState<Error | ZodError | undefined>()
+    const seenErrors = useSeenErrors(seenErrInput)
+
+    const { mutate: addPostMutation } = useMutation({
+        mutationFn: addPost,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["seenPosts"] })
+        },
+        onError: (err: Error | ZodError) => {
+            seenErrInputSet(err)
+        }
+    })
+
+    const postInitialValues: post = {
         id: uuidv4(),
         userId: "",
         communityId: passedCommunityId,
@@ -20,14 +39,26 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
         imageUrls: null
     }
 
-    const [postObj, postObjSet] = useState<usablePost>({ ...postInitialValues })
+    const [postObj, postObjSet] = useState<post>({ ...postInitialValues })
 
-    const videoUrlInput = useRef("")
-    const imageUrlInput = useRef("")
+
+    const [usableVideoUrls, usableVideoUrlsSet] = useState<string[]>(JSON.parse(postInitialValues.videoUrls ?? "[]"))
+    const [usableImageUrls, usableImageUrlsSet] = useState<string[]>(JSON.parse(postInitialValues.imageUrls ?? "[]"))
+
+    const handleSubmit = () => {
+        const localPostObj = { ...postObj }
+
+        if (usableVideoUrls.length > 0) localPostObj.videoUrls = JSON.stringify(usableVideoUrls)
+        if (usableImageUrls.length > 0) localPostObj.imageUrls = JSON.stringify(usableImageUrls)
+
+        addPostMutation(localPostObj)
+    }
 
     return (
         <div>
             <p>MakePost</p>
+            {seenErrors}
+
             <div>
 
                 <label htmlFor='messagesIdentifier'>Messages</label>
@@ -41,70 +72,72 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
 
 
                 <label htmlFor='videoIndentifier'>Videos</label>
-                <input id='videoIndentifier' type='text' onChange={(e) => videoUrlInput.current = e.target.value} placeholder='Enter a video Url' />
+                <input id='videoIndentifier' type='text' value={usableVideoUrls[usableVideoUrls.length - 1]}
+                    onChange={(e) => {
+                        usableVideoUrlsSet(prevUrls => {
+                            const newUrls = [...prevUrls]
+                            newUrls[usableVideoUrls.length - 1] = e.target.value
+                            return newUrls
+                        })
+                    }}
+                    placeholder='Enter a video Url' />
 
-                <button onClick={() => postObjSet(prevPostObj => {
-                    const newPostObj = { ...prevPostObj }
+                <button onClick={() => {
+                    usableVideoUrlsSet(prev => [...prev, ""])
+                }}>Add Video</button>
 
-                    if (!newPostObj.videoUrls) newPostObj.videoUrls = []
+                <div>
+                    {usableVideoUrls.map((eachVideoUrl, eachVideoUrlIndex) => {
+                        return (
+                            <div key={eachVideoUrlIndex}>
+                                <p onClick={() => usableVideoUrlsSet(prevUrls => {
+                                    const newUrls = [...prevUrls]
 
-                    newPostObj.videoUrls = [videoUrlInput.current, ...newPostObj.videoUrls]
+                                    newUrls.filter((e, urlIndex) => urlIndex !== eachVideoUrlIndex)
 
-                    return newPostObj
-                })}>Submit Video</button>
-
-                {postObj.videoUrls &&
-                    <div>
-                        {postObj.videoUrls.map((eachVideoUrl, eachVideoUrlIndex) => {
-                            return (
-                                <div key={eachVideoUrlIndex}>
-                                    <p onClick={() => postObjSet(prevPostObj => {
-                                        const newPostObj = { ...prevPostObj }
-
-                                        newPostObj.videoUrls = newPostObj.videoUrls!.filter((e, urlIndex) => urlIndex !== eachVideoUrlIndex)
-
-                                        return newPostObj
-                                    })}>X</p>
-                                    {eachVideoUrl}
-                                </div>
-                            )
-                        })}
-                    </div>}
+                                    return newUrls
+                                })}>X</p>
+                                <DisplayYTVideo videoId={eachVideoUrl} key={eachVideoUrlIndex} />
+                            </div>
+                        )
+                    })}
+                </div>
 
 
                 <label htmlFor='imageIndentifier'>Images</label>
-                <input id='imageIndentifier' type='text' onChange={(e) => imageUrlInput.current = e.target.value} placeholder='Enter an Image Link' />
+                <input id='imageIndentifier' type='text' value={usableImageUrls[usableImageUrls.length - 1]}
+                    onChange={(e) => {
+                        usableImageUrlsSet(prevUrls => {
+                            const newUrls = [...prevUrls]
+                            newUrls[usableImageUrls.length - 1] = e.target.value
+                            return newUrls
+                        })
+                    }}
+                    placeholder='Enter an Image Link' />
 
-                <button onClick={() => postObjSet(prevPostObj => {
-                    const newPostObj = { ...prevPostObj }
+                <button onClick={() => {
+                    usableImageUrlsSet(prev => [...prev, ""])
+                }}>Add Image</button>
 
-                    if (!newPostObj.imageUrls) newPostObj.imageUrls = []
+                <div>
+                    {usableImageUrls.map((eachImageUrl, eachImageUrlIndex) => {
+                        return (
+                            <div key={eachImageUrlIndex}>
+                                <p onClick={() => usableImageUrlsSet(prevUrls => {
+                                    const newUrls = [...prevUrls]
 
-                    newPostObj.imageUrls = [imageUrlInput.current, ...newPostObj.imageUrls]
+                                    newUrls.filter((e, urlIndex) => urlIndex !== eachImageUrlIndex)
 
-                    return newPostObj
-                })}>Submit Image</button>
-
-                {postObj.imageUrls &&
-                    <div>
-                        {postObj.imageUrls.map((eachImageUrl, eachImageUrlIndex) => {
-                            return (
-                                <div key={eachImageUrlIndex}>
-                                    <p onClick={() => postObjSet(prevPostObj => {
-                                        const newPostObj = { ...prevPostObj }
-
-                                        newPostObj.imageUrls = newPostObj.imageUrls!.filter((e, urlIndex) => urlIndex !== eachImageUrlIndex)
-
-                                        return newPostObj
-                                    })}>X</p>
-                                    {eachImageUrl}
-                                </div>
-                            )
-                        })}
-                    </div>}
+                                    return newUrls
+                                })}>X</p>
+                                <DisplayImage imageID={eachImageUrl} key={eachImageUrlIndex} />
+                            </div>
+                        )
+                    })}
+                </div>
 
 
-                <button role="submit" onClick={() => addPost(postObj)}>Submit</button>
+                <button role="submit" onClick={handleSubmit}>Submit</button>
             </div>
         </div>
     )

@@ -1,0 +1,1 @@
+ALTER TABLE `comments` ADD `reply_id` varchar(255);

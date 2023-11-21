@@ -8,9 +8,14 @@ export const communitySchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1),
     description: z.string().min(1),
-    userId: z.string(),
+    userId: z.string()
 })
-export type community = z.infer<typeof communitySchema>
+export type community = z.infer<typeof communitySchema> & {
+    createdBy?: user,
+    posts?: post[],
+    members?: user[],
+    tags?: tag[]
+}
 
 
 
@@ -19,6 +24,18 @@ export type community = z.infer<typeof communitySchema>
 
 
 
+//study sessions
+export const studySessionSchema = z.object({
+    id: z.string().min(1),
+    userId: z.string().min(1),
+    name: z.string().min(1),
+    authorizedMemberList: z.string().min(1).nullable()
+})
+export type studySession = z.infer<typeof studySessionSchema> & {
+    createdBy?: user,
+    posts?: post[],
+    members?: user[],
+}
 
 
 
@@ -33,15 +50,15 @@ export const userSchema = z.object({
     firstName: z.string().min(1).nullable(),
     lastName: z.string().min(1).nullable(),
 })
-export type user = z.infer<typeof userSchema>
-
-
-
-
-
-
-
-
+export type user = z.infer<typeof userSchema> & {
+    posts?: post[],
+    communitiesMade?: community,
+    studySessionsMade?: studySession[],
+    communitiesJoined?: community[],
+    studySessionsJoined?: studySession[],
+    comments?: comment[],
+    replies?: reply[]
+}
 
 
 
@@ -65,10 +82,114 @@ export const postSchema = z.object({
     videoUrls: z.string().min(1).nullable(),
     imageUrls: z.string().min(1).nullable(),
 })
-export type post = z.infer<typeof postSchema>
-
-//usable always means my strings are arrays / objects now
-export type usablePost = Omit<post, "videoUrls" | "imageUrls"> & {
-    videoUrls: null | string[],
-    imageUrls: null | string[]
+export type post = z.infer<typeof postSchema> & {
+    author?: user,
+    forCommunity?: community,
+    forStudySession?: studySession,
+    tags?: tag[],
+    comments?: comment[]
 }
+
+
+
+
+
+
+
+
+
+//comments
+export const commentsSchema = z.object({
+    id: z.string().min(1),
+    userId: z.string().min(1),
+    postId: z.string().min(1),
+    datePosted: z.date(),
+    message: z.string().min(1),
+    likes: z.number().nullable()
+})
+export type comment = z.infer<typeof commentsSchema> & {
+    parentPost?: post,
+    fromUser?: user,
+    replies?: reply[],
+}
+
+
+
+
+//reply
+export const replySchema = z.object({
+    id: z.string().min(1),
+    userId: z.string().min(1),
+    replyingToUserId: z.string().min(1),
+    commentId: z.string().min(1),
+    datePosted: z.date(),
+    message: z.string().min(1),
+    likes: z.number().nullable()
+})
+export type reply = z.infer<typeof replySchema> & {
+    fromComment?: comment,
+    fromUser?: user,
+    replyingToUser?: user
+}
+
+
+
+
+
+
+
+
+
+
+
+//tags
+export const tagSchema = z.object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+})
+export type tag = z.infer<typeof tagSchema> & {
+    forCommunity?: community[],
+    forPosts?: post[]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// //tagsToCommunities
+// export const tagsToCommunitiesSchema = z.object({
+//     pk: z.string().min(1),
+//     tagId: z.string().min(1),
+//     communityId: z.string().min(1)
+// })
+// export type tagsToCommunities = z.infer<typeof tagsToCommunitiesSchema> & {
+//     tag: tag | undefined,
+//     community: community | undefined
+// }
+
+
+
+
+
+
+
+
+
+
+// //tagsToPosts
+// export const tagsToPostsSchema = z.object({
+//     pk: z.string().min(1),
+//     tagId: z.string().min(1),
+//     postId: z.string().min(1)
+// })
+// export type tagsToPosts = z.infer<typeof tagsToPostsSchema> & {
+//     tag: tag | undefined,
+//     post: post | undefined
+// }

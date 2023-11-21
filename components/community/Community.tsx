@@ -1,30 +1,23 @@
 "use client"
-import { community, post, usablePost } from '@/types'
+import { community } from '@/types'
 import React, { useEffect, useState } from 'react'
 import styles from "./style.module.css"
 import DisplayPost from '../post/Post'
 import MakePost from '../post/MakePost'
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import DisplayAllPosts from '../post/DisplayAllPosts'
-import { getPostsFromCommunity } from '@/utility/serverFunctions/handlePosts'
+// import { getPostsFromCommunity } from '@/utility/serverFunctions/handlePosts'
 
-export default function Community({ seenCommunity, inPreviewMode = false }: { seenCommunity: community, inPreviewMode?: boolean }) {
+export default function Community({ seenCommunity, inPreviewMode }: { seenCommunity: community, inPreviewMode?: boolean }) {
 
-  const [posts, postsSet] = useState<usablePost[] | undefined>()
+  // const { data: posts, isLoading, error } = useQuery({
+  //   queryKey: ["seenPosts"],
+  //   queryFn: async () => await getPostsFromCommunity(seenCommunity.id).then(postArr => postArr.map(eachPost => {
+  //     return { ...eachPost, imageUrls: eachPost.imageUrls ? JSON.parse(eachPost.imageUrls) : eachPost.imageUrls, videoUrls: eachPost.videoUrls ? JSON.parse(eachPost.videoUrls) : eachPost.videoUrls }
+  //   })),
+  //   refetchOnWindowFocus: false
+  // })
 
-  useEffect(() => {
-    const loadPosts = async () => {
-      let seenPosts: post[] = await getPostsFromCommunity(seenCommunity.id)
-
-      seenPosts.forEach(eachPost => {
-        if (eachPost.imageUrls) eachPost.imageUrls = JSON.parse(eachPost.imageUrls)
-        if (eachPost.videoUrls) eachPost.videoUrls = JSON.parse(eachPost.videoUrls)
-      })
-
-      postsSet(seenPosts as usablePost[])
-    }
-    loadPosts()
-  }, [])
   return (
     <div className={styles.communityMainDiv} style={{ minHeight: inPreviewMode ? "auto" : "100vh", borderRadius: inPreviewMode ? "2rem" : "0px" }}>
       {inPreviewMode ? (
@@ -32,20 +25,19 @@ export default function Community({ seenCommunity, inPreviewMode = false }: { se
           <div style={{ display: "grid", gap: "1rem" }}>
             <p>Name: {seenCommunity.name}</p>
             <p>Description: {seenCommunity.description}</p>
-            <p>Top 3 Posts</p>
+
+            <p>Top Posts</p>
+
+            {seenCommunity.posts && <DisplayAllPosts posts={seenCommunity.posts} inPreviewMode={inPreviewMode} />}
+
           </div>
         </>
       ) : (
         <>
           <p>Hey there welcome to {seenCommunity.name}</p>
           <p>Description: {seenCommunity.description}</p>
-          {/* fetch data show resutls as post */}
-          {/* <DisplayPost seenPost={}/> */}
-          <br />
-          <br />
-          <br />
 
-          {posts && <DisplayAllPosts posts={posts} />}
+          {seenCommunity.posts && <DisplayAllPosts posts={seenCommunity.posts} />}
 
           <MakePost passedCommunityId={seenCommunity.id} passedStudySessionId={null} />
         </>

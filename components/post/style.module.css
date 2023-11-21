@@ -29,14 +29,12 @@
     grid-auto-flow: column;
     grid-auto-columns: min(500px, 100%);
     overflow-x: auto;
-    column-gap: 5rem;
+    gap: 1rem;
 }
 
 .imgCont {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: auto;
-    grid-auto-rows: 400px;
+    display: flex;
     overflow-x: auto;
-    column-gap: 5rem;
+    height: 400px;
+    gap: 1rem;
 }
