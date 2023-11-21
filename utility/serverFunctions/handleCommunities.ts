@@ -13,16 +13,22 @@ import { eq, desc, asc } from "drizzle-orm";
 import { ZodError } from "zod";
 
 
-export async function getAllCommunities() {
+export async function getAllCommunities(seenLimit: number, seenOffset: number) {
     const conn = connect(config)
     const db = drizzle(conn, { schema });
 
     const results = await db.query.communities.findMany({
+        orderBy: [desc(communities.memberCount)],
+        limit: seenLimit,
+        offset: seenOffset,
         with: {
             posts: {
+                limit: 3,
                 orderBy: [desc(posts.likes)],
-                limit: 3
-            }
+                with: {
+                    author: true
+                }
+            },
         }
     });
 
@@ -41,8 +47,8 @@ export async function getSpecificCommunity(seenCommunityID: string) {
                 orderBy: [desc(posts.datePosted)],
                 limit: 50,
                 with: {
+                    author: true,
                     comments: {
-                        limit: 2,
                         with: {
                             fromUser: true,
                         }

@@ -29,7 +29,6 @@ export default function MakeComment({ seenPostId, seenReplyId }: { seenPostId: s
         id: uuidv4(),
         userId: "",
         postId: seenPostId,
-        replyId: seenReplyId,
         datePosted: new Date(),
         message: "",
         likes: null

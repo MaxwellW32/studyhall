@@ -7,6 +7,7 @@ import { z } from "zod";
 export const communitySchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1),
+    memberCount: z.number(),
     description: z.string().min(1),
     userId: z.string()
 })

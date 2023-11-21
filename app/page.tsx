@@ -18,10 +18,13 @@ export default function App() {
   const [seenErrInput, seenErrInputSet] = useState<Error | ZodError | undefined>()
   const seenErrors = useSeenErrors(seenErrInput)
 
+  const [communityOffset, communityOffsetSet] = useState(0)
+  const [communityLimit, communityLimitSet] = useState(50)
+
 
   const { data: communities, isLoading, error } = useQuery({
-    queryKey: ["seenCommunities"],
-    queryFn: async () => await getAllCommunities(),
+    queryKey: ["seenCommunities", communityLimit, communityOffset],
+    queryFn: async () => await getAllCommunities(communityLimit, communityOffset),
     refetchOnWindowFocus: false
   })
 
@@ -68,23 +71,23 @@ export default function App() {
 
       <h1>Study Hall</h1>
 
-      <button onClick={() => {
+      {/* <button onClick={() => {
         addCommunityMutation({
           id: uuidv4(),
-          description: "brand new community",
-          name: "First community",
-          userId: uuidv4()
+          description: "second community",
+          name: "Second community",
+          userId: "b4aa351c-3f84-4b73-b581-ef5836fdf500"
         })
-      }}>Submit new community</button>
+      }}>Submit new community</button> */}
 
-      <button onClick={() =>
+      {/* <button onClick={() =>
         updateCommunityMutation({
           id: " ",
           description: "brand new community",
           name: "First community",
           userId: "b4aa351c-3f84-4b73-b581-ef5836fdf500"
         })}
-      >Submit update community</button>
+      >Submit update community</button> */}
 
       {/* 
             <button onClick={() =>
@@ -113,16 +116,19 @@ export default function App() {
 
       <br />
 
-      {communities?.map((eachCommunity: community) => {
-        return (
-          <div key={eachCommunity.id} onClick={() => {
-            router.push(`/community/${eachCommunity.id}/${eachCommunity.name.toLowerCase().replace(/ /g, '_')}`)
-          }}>
-            <Community seenCommunity={eachCommunity} inPreviewMode={true} />
-          </div>
-        )
-      })}
+      <div style={{ display: "grid", gap: "1rem" }}>
+        {communities?.map((eachCommunity: community) => {
+          return (
+            <div key={eachCommunity.id} onClick={() => { router.push(`/community/${eachCommunity.id}/${eachCommunity.name.toLowerCase().replace(/ /g, '_')}`) }}>
+              <Community seenCommunity={eachCommunity} inPreviewMode={true} />
+            </div>
+          )
+        })}
+      </div>
+
+
     </main>
+
   )
 }
 

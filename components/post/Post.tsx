@@ -11,11 +11,11 @@ import MakeComment from '../comment/MakeComment'
 
 export default function DisplayPost({ seenPost, inPreviewMode }: { seenPost: post, inPreviewMode?: boolean }) {
 
-    const { data: seenAuthor, isLoading } = useQuery({
-        queryKey: ["seenAuthor"],
-        queryFn: async () => await getPostUser(seenPost.userId),
-        refetchOnWindowFocus: false
-    })
+    // const { data: seenAuthor, isLoading } = useQuery({
+    //     queryKey: ["seenAuthor"],
+    //     queryFn: async () => await getPostUser(seenPost.userId),
+    //     refetchOnWindowFocus: false
+    // })
 
     const usableVideoUrls = useMemo(() => {
         return JSON.parse(seenPost.videoUrls ?? "[]") as string[]
@@ -28,38 +28,44 @@ export default function DisplayPost({ seenPost, inPreviewMode }: { seenPost: pos
 
     return (
         <div className={styles.postMainDiv}>
+            {inPreviewMode ? (
+                <>
+                    <p>message: {seenPost.message}</p>
+                    <p>likes {seenPost.likes}</p>
+                    <p>Posted by: {seenPost.author && <span>{seenPost.author.firstName}<span style={{ color: "blue" }}>({seenPost.author.username})</span></span>}</p>
 
-            {isLoading ? <p>Loading author...</p> : (
-                <p>Posted by: {seenAuthor && <span>{seenAuthor.firstName}<span style={{ color: "blue" }}>({seenAuthor.username})</span></span>}</p>
-            )}
+                </>
+            ) : (
+                <>
+                    <p>Posted by: {seenPost.author && <span>{seenPost.author.firstName}<span style={{ color: "blue" }}>({seenPost.author.username})</span></span>}</p>
+                    <p>post id {seenPost.id}</p>
+                    <p>message: {seenPost.message}</p>
+                    <p>posted: <Moment fromNow>{seenPost.datePosted}</Moment></p>
+                    <p>likes {seenPost.likes}</p>
 
-            <p>post id {seenPost.id}</p>
-            <p>message: {seenPost.message}</p>
-            <p>posted: <Moment fromNow>{seenPost.datePosted}</Moment></p>
-            <p>likes {seenPost.likes}</p>
-
-            <p>images</p>
-            <div className={styles.imgCont}>
-                {usableImageUrls.map((eachUrl, eachUrlIndex) => {
-                    return (
-                        <DisplayImage key={eachUrlIndex} imageID={eachUrl} />
-                    )
-                })}
-            </div>
+                    <p>images</p>
+                    <div className={styles.imgCont} style={{ height: inPreviewMode ? "50px" : "400px" }}>
+                        {usableImageUrls.map((eachUrl, eachUrlIndex) => {
+                            return (
+                                <DisplayImage key={eachUrlIndex} imageID={eachUrl} />
+                            )
+                        })}
+                    </div>
 
 
-            <p>videos</p>
-            <div className={styles.ytVideoCont}>
-                {usableVideoUrls.map((eachUrl, eachUrlIndex) => {
-                    return (
-                        <DisplayYTVideo key={eachUrlIndex} videoId={eachUrl} />
-                    )
-                })}
-            </div>
+                    <p>videos</p>
+                    <div className={styles.ytVideoCont} style={{ height: inPreviewMode ? "100px" : "auto" }}>
+                        {usableVideoUrls.map((eachUrl, eachUrlIndex) => {
+                            return (
+                                <DisplayYTVideo key={eachUrlIndex} videoId={eachUrl} />
+                            )
+                        })}
+                    </div>
 
-            <MakeComment seenPostId={seenPost.id} seenReplyId={null} />
+                    <MakeComment seenPostId={seenPost.id} seenReplyId={null} />
 
-            {seenPost.comments && <DisplayAllComments comments={seenPost.comments} />}
+                    {seenPost.comments && <DisplayAllComments comments={seenPost.comments} />}
+                </>)}
 
         </div>
     )

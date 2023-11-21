@@ -1,6 +1,7 @@
 import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, primaryKey, varchar, text, date, int, datetime, longtext, PrimaryKey } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 import { relations } from 'drizzle-orm';
+import { number } from "zod";
 
 
 export const users = mysqlTable("users", {
@@ -34,6 +35,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const communities = mysqlTable("communities", {
     id: varchar("id", { length: 255 }).primaryKey().notNull(),
     userId: text("user_id").notNull(),
+    memberCount: int("member_count").default(0).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description").notNull(),
 });
