@@ -1,0 +1,41 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1700429551132,
+      "tag": "0000_lethal_iron_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1700494175746,
+      "tag": "0001_condemned_ghost_rider",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1700494393318,
+      "tag": "0002_unique_violations",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1700507100208,
+      "tag": "0003_public_golden_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1700507278604,
+      "tag": "0004_amazing_talisman",
+      "breakpoints": true
+    }
+  ]
+}
