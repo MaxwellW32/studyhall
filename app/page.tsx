@@ -10,6 +10,7 @@ import Community from "@/components/community/Community";
 import { addUser, updateUser } from "@/utility/serverFunctions/handleUsers";
 import { useRouter } from 'next/navigation'
 import useSeenErrors from "@/utility/useful/useSeenErrors";
+// import { signOut } from 'next-auth/react';
 
 export default function App() {
   const queryClient = useQueryClient()
@@ -48,8 +49,6 @@ export default function App() {
     }
   })
 
-
-
   const { mutate: deleteToDoMutation } = useMutation({
     mutationFn: deleteCommunity,
     onSuccess: () => {
@@ -71,51 +70,6 @@ export default function App() {
 
       <h1>Study Hall</h1>
 
-      {/* <button onClick={() => {
-        addCommunityMutation({
-          id: uuidv4(),
-          description: "second community",
-          name: "Second community",
-          userId: "b4aa351c-3f84-4b73-b581-ef5836fdf500"
-        })
-      }}>Submit new community</button> */}
-
-      {/* <button onClick={() =>
-        updateCommunityMutation({
-          id: " ",
-          description: "brand new community",
-          name: "First community",
-          userId: "b4aa351c-3f84-4b73-b581-ef5836fdf500"
-        })}
-      >Submit update community</button> */}
-
-      {/* 
-            <button onClick={() =>
-                deleteToDoMutation({
-                    id: selectedID,
-                })}
-            >Submit delete todo</button> */}
-
-      <button onClick={() => {
-        // addUser({
-        //     id: uuidv4(),
-        //     username: `newusername${uuidv4().slice(0, 9)}`,
-        //     firstName: null,
-        //     lastName: null
-        // })
-      }}>add new user</button>
-
-      <button onClick={() => {
-        // updateUser({
-        //     id: "b4aa351c-3f84-4b73-b581-ef5836fdf500",
-        //     username: "AdminMax",
-        //     firstName: "Maxwell",
-        //     lastName: null
-        // })
-      }}>update user</button>
-
-      <br />
-
       <div style={{ display: "grid", gap: "1rem" }}>
         {communities?.map((eachCommunity: community) => {
           return (
@@ -125,10 +79,7 @@ export default function App() {
           )
         })}
       </div>
-
-
     </main>
-
   )
 }
 
@@ -151,3 +102,47 @@ export default function App() {
 
 
 
+// <button onClick={() => {
+//         addCommunityMutation({
+//           id: uuidv4(),
+//           description: "second community",
+//           name: "Second community",
+//           userId: "b4aa351c-3f84-4b73-b581-ef5836fdf500"
+//         })
+//       }}>Submit new community</button>
+
+//       <button onClick={() =>
+//         updateCommunityMutation({
+//           id: " ",
+//           description: "brand new community",
+//           name: "First community",
+//           userId: "b4aa351c-3f84-4b73-b581-ef5836fdf500"
+//         })}
+//       >Submit update community</button>
+
+      
+//             <button onClick={() =>
+//                 deleteToDoMutation({
+//                     id: selectedID,
+//                 })}
+//             >Submit delete todo</button>
+
+//       <button onClick={() => {
+//         addUser({
+//           id: "b4aa351c-3f84-4b73-b581-ef5836fdf500",
+//           username: `AdminMax`,
+//           firstName: "Maxwell",
+//           lastName: null,
+//           password: "mmm",
+//           email: null
+//         })
+//       }}>add new user</button>
+
+//       <button onClick={() => {
+//         updateUser({
+//             id: "b4aa351c-3f84-4b73-b581-ef5836fdf500",
+//             username: "AdminMax",
+//             firstName: "Maxwell",
+//             lastName: null
+//         })
+//       }}>update user</button>

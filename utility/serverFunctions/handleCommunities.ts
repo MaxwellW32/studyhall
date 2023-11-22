@@ -1,22 +1,12 @@
 "use server"
 
 import { community, communitySchema } from "@/types";
-import { v4 as uuidv4 } from "uuid"
-import { connect } from "@planetscale/database"
-import { config } from "@/db/config"
-
-import * as schema from "@/db/schema"
 import { communities, posts, comments, replies } from "@/db/schema"
-
-import { drizzle } from "drizzle-orm/planetscale-serverless"
 import { eq, desc, asc } from "drizzle-orm";
-import { ZodError } from "zod";
+import { db } from "@/db";
 
 
 export async function getAllCommunities(seenLimit: number, seenOffset: number) {
-    const conn = connect(config)
-    const db = drizzle(conn, { schema });
-
     const results = await db.query.communities.findMany({
         orderBy: [desc(communities.memberCount)],
         limit: seenLimit,
@@ -36,9 +26,6 @@ export async function getAllCommunities(seenLimit: number, seenOffset: number) {
 }
 
 export async function getSpecificCommunity(seenCommunityID: string) {
-    const conn = connect(config)
-
-    const db = drizzle(conn, { schema });
 
     const result = await db.query.communities.findFirst({
         where: eq(communities.id, seenCommunityID),
@@ -73,9 +60,6 @@ export async function getSpecificCommunity(seenCommunityID: string) {
 export async function addCommunity(seenCommunity: community) {
     communitySchema.parse(seenCommunity)
 
-    const conn = connect(config)
-    const db = drizzle(conn)
-
     await db.insert(communities).values(seenCommunity);
 }
 
@@ -83,22 +67,14 @@ export async function updateCommunity(seenCommunity: community) {
 
     communitySchema.parse(seenCommunity)
 
-    const conn = connect(config)
-    const db = drizzle(conn)
-
     await db.update(communities)
         .set(seenCommunity)
         .where(eq(communities.id, seenCommunity.id));
 }
 
-
-
 export async function deleteCommunity(seenId: string) {
 
     communitySchema.pick({ id: true }).parse(seenId)
-
-    const conn = connect(config)
-    const db = drizzle(conn)
 
     await db.delete(communities).where(eq(communities.id, seenId));
 }

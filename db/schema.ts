@@ -1,19 +1,23 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, primaryKey, varchar, text, date, int, datetime, longtext, PrimaryKey } from "drizzle-orm/mysql-core"
-import { sql } from "drizzle-orm"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, timestamp, primaryKey, varchar, text, date, int, datetime, longtext, PrimaryKey, bigint, uniqueIndex } from "drizzle-orm/mysql-core"
 import { relations } from 'drizzle-orm';
-import { number } from "zod";
 
 
 export const users = mysqlTable("users", {
     id: varchar("id", { length: 255 }).primaryKey().notNull(),
     username: varchar("username", { length: 255 }).notNull().unique(),
-    firstName: varchar("first_name", { length: 255 }),
-    lastName: varchar("last_name", { length: 255 }),
+    password: varchar("password", { length: 255 }).notNull(),
+    email: varchar("email", { length: 255 }).notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
+    emailVerified: timestamp("emailVerified", { mode: "date", fsp: 3 }).defaultNow(),
+    image: varchar("image", { length: 255 }),
+    name: varchar("name", { length: 255 })
 },
     (table) => {
         return {
             usernameIdx: index("username_index").on(table.username),
             userIdIdx: index("user_id_index").on(table.id),
+            emailIndex: uniqueIndex('users_email_index').on(table.email),
         }
     });
 
@@ -28,6 +32,64 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 
+//auth
+export const accounts = mysqlTable('accounts', {
+    id: varchar('id', { length: 255 }).primaryKey().notNull(),
+    userId: varchar('userId', { length: 255 }).notNull(),
+    type: varchar('type', { length: 255 }).notNull(),
+    provider: varchar('provider', { length: 255 }).notNull(),
+    providerAccountId: varchar('providerAccountId', { length: 255 }).notNull(),
+    access_token: text('access_token'),
+    expires_in: int('expires_in'),
+    id_token: text('id_token'),
+    refresh_token: text('refresh_token'),
+    refresh_token_expires_in: int('refresh_token_expires_in'),
+    scope: varchar('scope', { length: 255 }),
+    token_type: varchar('token_type', { length: 255 }),
+    createdAt: timestamp('createdAt').defaultNow().notNull(),
+    updatedAt: timestamp('updatedAt').defaultNow().onUpdateNow().notNull(),
+},
+    account => ({
+        providerProviderAccountIdIndex: uniqueIndex(
+            'accounts__provider__providerAccountId__idx'
+        ).on(account.provider, account.providerAccountId),
+        userIdIndex: index('accounts__userId__idx').on(account.userId),
+    })
+);
+
+export const sessions = mysqlTable(
+    'sessions',
+    {
+        id: varchar('id', { length: 255 }).primaryKey().notNull(),
+        sessionToken: varchar('sessionToken', { length: 255 }).notNull(),
+        userId: varchar('userId', { length: 255 }).notNull(),
+        expires: datetime('expires').notNull(),
+        created_at: timestamp('created_at').notNull().defaultNow(),
+        updated_at: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
+    },
+    session => ({
+        sessionTokenIndex: uniqueIndex('sessions__sessionToken__idx').on(
+            session.sessionToken
+        ),
+        userIdIndex: index('sessions__userId__idx').on(session.userId),
+    })
+);
+
+export const verificationTokens = mysqlTable(
+    'verification_tokens',
+    {
+        identifier: varchar('identifier', { length: 255 }).primaryKey().notNull(),
+        token: varchar('token', { length: 255 }).notNull(),
+        expires: datetime('expires').notNull(),
+        created_at: timestamp('created_at').notNull().defaultNow(),
+        updated_at: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
+    },
+    verificationToken => ({
+        tokenIndex: uniqueIndex('verification_tokens__token__idx').on(
+            verificationToken.token
+        ),
+    })
+);
 
 
 

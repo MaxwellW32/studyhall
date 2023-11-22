@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `type` varchar(255) NOT NULL;
