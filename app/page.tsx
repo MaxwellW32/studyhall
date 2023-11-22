@@ -16,7 +16,7 @@ export default function App() {
 
   const { data: communities, isLoading, error } = useQuery({
     queryKey: ["seenCommunities", communityLimit, communityOffset],
-    queryFn: async () => await getAllCommunities(communityLimit, communityOffset) as unknown as community[],
+    queryFn: async () => await getAllCommunities(communityLimit, communityOffset),
     refetchOnWindowFocus: false
   })
 

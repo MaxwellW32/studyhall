@@ -32,7 +32,7 @@ export async function addComment(seenComment: newComment) {
         ...seenComment,
         id: uuidv4(),
         userId: session.user.id,
-        datePosted: new Date(),
+        datePosted: new Date,
         likes: null
     }
 

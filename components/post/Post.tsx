@@ -15,7 +15,7 @@ export default function DisplayPost({ seenPost, inPreviewMode }: { seenPost: pos
 
     const { data: comments, isLoading } = useQuery({
         queryKey: ["seenComments", seenPost.id, commentOffset],
-        queryFn: async () => await getPostComments(seenPost.id, commentOffset) as unknown as comment[],
+        queryFn: async () => await getPostComments(seenPost.id, commentOffset),
         refetchOnWindowFocus: false
     })
 

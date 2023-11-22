@@ -1,5 +1,5 @@
 "use client"
-import { community } from '@/types'
+import { community, post } from '@/types'
 import React, { useEffect, useState } from 'react'
 import styles from "./style.module.css"
 import DisplayPost from '../post/Post'
@@ -8,18 +8,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import DisplayAllPosts from '../post/DisplayAllPosts'
 // import { getPostsFromCommunity } from '@/utility/serverFunctions/handlePosts'
 import { addCommunity, deleteCommunity, getAllCommunities, updateCommunity } from "@/utility/serverFunctions/handleCommunities";
+import { getLatestPosts } from '@/utility/serverFunctions/handlePosts'
 
 export default function Community({ seenCommunity, inPreviewMode }: { seenCommunity: community, inPreviewMode?: boolean }) {
   const queryClient = useQueryClient()
 
-  // const { data: posts, isLoading, error } = useQuery({
-  //   queryKey: ["seenPosts"],
-  //   queryFn: async () => await getPostsFromCommunity(seenCommunity.id).then(postArr => postArr.map(eachPost => {
-  //     return { ...eachPost, imageUrls: eachPost.imageUrls ? JSON.parse(eachPost.imageUrls) : eachPost.imageUrls, videoUrls: eachPost.videoUrls ? JSON.parse(eachPost.videoUrls) : eachPost.videoUrls }
-  //   })),
-  //   refetchOnWindowFocus: false
-  // })
-
+  const { data: posts, isLoading, error } = useQuery({
+    queryKey: ["seenPosts"],
+    queryFn: async () => await getLatestPosts(seenCommunity.id, 50),
+    refetchOnWindowFocus: false
+  })
 
   const { mutate: updateCommunityMutation } = useMutation({
     mutationFn: updateCommunity,
@@ -50,7 +48,6 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
             <p>Top Posts</p>
 
             {seenCommunity.posts && <DisplayAllPosts posts={seenCommunity.posts} inPreviewMode={inPreviewMode} />}
-
           </div>
         </>
       ) : (
@@ -58,7 +55,7 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
           <p>Hey there welcome to {seenCommunity.name}</p>
           <p>Description: {seenCommunity.description}</p>
 
-          {seenCommunity.posts && <DisplayAllPosts posts={seenCommunity.posts} />}
+          {posts && <DisplayAllPosts posts={posts} />}
 
           <MakePost passedCommunityId={seenCommunity.id} passedStudySessionId={null} />
         </>

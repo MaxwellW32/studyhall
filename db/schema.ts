@@ -11,14 +11,14 @@ export const users = mysqlTable("users", {
     emailVerified: timestamp("emailVerified", { mode: "date", fsp: 3 }).defaultNow(),
     image: varchar("image", { length: 255 }),
     username: varchar("username", { length: 255 }).notNull().unique(),
-    created_at: timestamp('created_at').notNull().defaultNow(),
-    updated_at: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
 },
     (table) => {
         return {
             usernameIdx: index("username_index").on(table.username),
             userIdIdx: index("user_id_index").on(table.id),
-            emailIndex: uniqueIndex('users_email_index').on(table.email),
+            emailIdx: uniqueIndex('users_email_index').on(table.email),
         }
     });
 

@@ -14,7 +14,7 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
 
     const { data: replies, isLoading, error } = useQuery<reply[]>({
         queryKey: ["seenReplies", seenComment.id, replyOffset],
-        queryFn: async () => await getCommentReplies(seenComment.id, replyOffset) as unknown as reply[],
+        queryFn: async () => await getCommentReplies(seenComment.id, replyOffset),
         refetchOnWindowFocus: false
     })
 
@@ -32,9 +32,9 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
             <MakeReply seenCommentId={seenComment.id} replyingToUserId={seenComment.userId} />
 
             <div style={{ paddingLeft: "1rem" }}>
-                {seenComment.replies && (
+                {replies && (
                     <>
-                        <DisplayAllReplies replies={seenComment.replies} />
+                        <DisplayAllReplies replies={replies} />
                         <button onClick={() => replyOffsetSet(prev => prev + 15)}>Show More Replies</button>
                     </>
                 )}

@@ -38,7 +38,10 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
     const [postObj, postObjSet] = useState({ ...postInitialValues })
 
 
+    const [videoUrlInput, videoUrlInputSet] = useState("")
     const [usableVideoUrls, usableVideoUrlsSet] = useState<string[]>([])
+
+    const [imageUrlInput, imageUrlInputSet] = useState("")
     const [usableImageUrls, usableImageUrlsSet] = useState<string[]>([])
 
     const handleSubmit = () => {
@@ -74,28 +77,26 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
 
 
                 <label htmlFor='videoIndentifier'>Videos</label>
-                <input id='videoIndentifier' type='text' value={usableVideoUrls[usableVideoUrls.length - 1]}
+                <input id='videoIndentifier' type='text' value={videoUrlInput}
                     onChange={(e) => {
-                        usableVideoUrlsSet(prevUrls => {
-                            const newUrls = [...prevUrls]
-                            newUrls[usableVideoUrls.length - 1] = e.target.value
-                            return newUrls
-                        })
+                        videoUrlInputSet(e.target.value)
                     }}
                     placeholder='Enter a video Url' />
 
                 <button onClick={() => {
-                    usableVideoUrlsSet(prev => [...prev, ""])
+                    if (!videoUrlInput) return
+                    usableVideoUrlsSet(prev => [...prev, videoUrlInput])
+                    videoUrlInputSet("")
+
                 }}>Add Video</button>
 
                 <div>
                     {usableVideoUrls.map((eachVideoUrl, eachVideoUrlIndex) => {
+
                         return (
                             <div key={eachVideoUrlIndex}>
                                 <p onClick={() => usableVideoUrlsSet(prevUrls => {
-                                    const newUrls = [...prevUrls]
-
-                                    newUrls.filter((e, urlIndex) => urlIndex !== eachVideoUrlIndex)
+                                    const newUrls = prevUrls.filter((e, urlIndex) => urlIndex !== eachVideoUrlIndex)
 
                                     return newUrls
                                 })}>X</p>
@@ -107,28 +108,25 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
 
 
                 <label htmlFor='imageIndentifier'>Images</label>
-                <input id='imageIndentifier' type='text' value={usableImageUrls[usableImageUrls.length - 1]}
+                <input id='imageIndentifier' type='text' value={imageUrlInput}
                     onChange={(e) => {
-                        usableImageUrlsSet(prevUrls => {
-                            const newUrls = [...prevUrls]
-                            newUrls[usableImageUrls.length - 1] = e.target.value
-                            return newUrls
-                        })
+                        imageUrlInputSet(e.target.value)
                     }}
                     placeholder='Enter an Image Link' />
 
                 <button onClick={() => {
-                    usableImageUrlsSet(prev => [...prev, ""])
+                    if (!imageUrlInput) return
+                    usableImageUrlsSet(prev => [...prev, imageUrlInput])
+                    imageUrlInputSet("")
                 }}>Add Image</button>
 
                 <div>
                     {usableImageUrls.map((eachImageUrl, eachImageUrlIndex) => {
+
                         return (
                             <div key={eachImageUrlIndex}>
                                 <p onClick={() => usableImageUrlsSet(prevUrls => {
-                                    const newUrls = [...prevUrls]
-
-                                    newUrls.filter((e, urlIndex) => urlIndex !== eachImageUrlIndex)
+                                    const newUrls = prevUrls.filter((e, urlIndex) => urlIndex !== eachImageUrlIndex)
 
                                     return newUrls
                                 })}>X</p>

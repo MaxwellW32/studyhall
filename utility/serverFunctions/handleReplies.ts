@@ -32,7 +32,7 @@ export async function addReply(seenReply: newReply) {
         ...seenReply,
         id: uuidv4(),
         userId: session.user.id,
-        datePosted: new Date(),
+        datePosted: new Date,
         likes: null
     }
 

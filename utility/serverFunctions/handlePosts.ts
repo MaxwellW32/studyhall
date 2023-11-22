@@ -3,17 +3,43 @@
 import { newPost, post, postSchema } from "@/types";
 import * as schema from '@/db/schema';
 import { posts } from "@/db/schema"
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { usableDb } from "@/db";
 import { authOptions } from '@/lib/auth/auth-options'
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid"
+import { revalidatePath } from "next/cache";
 
-export async function getAllPosts() {
+export async function getTopPosts(communityId: string, seenLimit: number) {
 
-    const results = await usableDb.query.posts.findMany();
+    const results = await usableDb.query.posts.findMany({
+        where: eq(posts.communityId, communityId),
+        orderBy: [desc(posts.likes)],
+        limit: seenLimit,
+        with: {
+            author: true
+        }
+    });
+
     return results
 }
+
+export async function getLatestPosts(communityId: string, seenLimit: number) {
+
+    const results = await usableDb.query.posts.findMany({
+        where: eq(posts.communityId, communityId),
+        orderBy: [desc(posts.datePosted)],
+        limit: seenLimit,
+        with: {
+            author: true
+        }
+    });
+
+    return results
+
+
+}
+
 
 export async function addPost(seenPost: newPost) {
 
@@ -24,13 +50,15 @@ export async function addPost(seenPost: newPost) {
         ...seenPost,
         id: uuidv4(),
         userId: session.user.id,
-        datePosted: new Date(),
+        datePosted: new Date,
         likes: null
     }
 
     postSchema.parse(newPost)
 
     await usableDb.insert(posts).values(newPost);
+
+    revalidatePath("/")
 }
 
 export async function updatePost(seenPost: post) {
