@@ -1,21 +1,23 @@
-import { post, user } from '@/types'
+import { post } from '@/types'
 import React, { useEffect, useState, useMemo } from 'react'
 import styles from "./style.module.css"
 import DisplayYTVideo from '@/utility/useful/DisplayYTVideo'
 import DisplayImage from '@/utility/useful/DisplayImage'
-import { getPostUser } from '@/utility/serverFunctions/handleUsers'
 import Moment from 'react-moment';
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import DisplayAllComments from '../comment/DisplayAllComments'
 import MakeComment from '../comment/MakeComment'
+import { getPostComments } from '@/utility/serverFunctions/handleComments'
 
 export default function DisplayPost({ seenPost, inPreviewMode }: { seenPost: post, inPreviewMode?: boolean }) {
+    const [getComments, getCommentsSet] = useState(false)
 
-    // const { data: seenAuthor, isLoading } = useQuery({
-    //     queryKey: ["seenAuthor"],
-    //     queryFn: async () => await getPostUser(seenPost.userId),
-    //     refetchOnWindowFocus: false
-    // })
+    const { data: comments, isLoading } = useQuery({
+        queryKey: ["seenComments"],
+        enabled: getComments,
+        queryFn: async () => await getPostComments(seenPost.id),
+        refetchOnWindowFocus: false
+    })
 
     const usableVideoUrls = useMemo(() => {
         return JSON.parse(seenPost.videoUrls ?? "[]") as string[]
@@ -62,9 +64,20 @@ export default function DisplayPost({ seenPost, inPreviewMode }: { seenPost: pos
                         })}
                     </div>
 
-                    <MakeComment seenPostId={seenPost.id} seenReplyId={null} />
+                    <MakeComment seenPostId={seenPost.id} />
 
-                    {seenPost.comments && <DisplayAllComments comments={seenPost.comments} />}
+                    {!getComments && <button onClick={() => getCommentsSet(true)}>Show Comments</button>}
+
+                    {getComments ? (
+                        <>
+                            {comments && <DisplayAllComments comments={comments} />}
+                        </>
+                    ) : (
+                        <>
+                            {seenPost.comments && <DisplayAllComments comments={seenPost.comments} />}
+                        </>
+                    )}
+
                 </>)}
 
         </div>

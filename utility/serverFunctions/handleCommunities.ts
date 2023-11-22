@@ -6,7 +6,7 @@ import { connect } from "@planetscale/database"
 import { config } from "@/db/config"
 
 import * as schema from "@/db/schema"
-import { communities, posts } from "@/db/schema"
+import { communities, posts, comments, replies } from "@/db/schema"
 
 import { drizzle } from "drizzle-orm/planetscale-serverless"
 import { eq, desc, asc } from "drizzle-orm";
@@ -49,8 +49,14 @@ export async function getSpecificCommunity(seenCommunityID: string) {
                 with: {
                     author: true,
                     comments: {
+                        orderBy: [desc(comments.likes)],
+                        limit: 1,
                         with: {
                             fromUser: true,
+                            replies: {
+                                orderBy: [desc(replies.likes)],
+                                limit: 1
+                            },
                         }
                     }
                 }

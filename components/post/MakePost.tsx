@@ -42,8 +42,8 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
     const [postObj, postObjSet] = useState<post>({ ...postInitialValues })
 
 
-    const [usableVideoUrls, usableVideoUrlsSet] = useState<string[]>(JSON.parse(postInitialValues.videoUrls ?? "[]"))
-    const [usableImageUrls, usableImageUrlsSet] = useState<string[]>(JSON.parse(postInitialValues.imageUrls ?? "[]"))
+    const [usableVideoUrls, usableVideoUrlsSet] = useState<string[]>([])
+    const [usableImageUrls, usableImageUrlsSet] = useState<string[]>([])
 
     const handleSubmit = () => {
         const localPostObj = { ...postObj }
@@ -52,6 +52,12 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
         if (usableImageUrls.length > 0) localPostObj.imageUrls = JSON.stringify(usableImageUrls)
 
         addPostMutation(localPostObj)
+
+
+        //reset
+        postObjSet({ ...postInitialValues })
+        usableVideoUrlsSet([])
+        usableImageUrlsSet([])
     }
 
     return (

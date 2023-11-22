@@ -1,16 +1,15 @@
 "use server"
 
 import { comment, commentsSchema } from "@/types";
-import { v4 as uuidv4 } from "uuid"
 import * as schema from "@/db/schema"
 import { connect } from "@planetscale/database"
 import { config } from "@/db/config"
 import { comments, users, replies } from "@/db/schema"
 import { drizzle } from "drizzle-orm/planetscale-serverless"
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 
-export async function getAllCommentsFromPost(seenPostId: string) {
+export async function getPostComments(seenPostId: string) {
 
     const conn = connect(config)
 
@@ -18,28 +17,13 @@ export async function getAllCommentsFromPost(seenPostId: string) {
 
     const results = await db.query.comments.findMany({
         where: eq(comments.postId, seenPostId),
+        orderBy: [desc(comments.likes)],
         with: {
             fromUser: true,
             replies: {
-                limit: 3
+                orderBy: [desc(replies.likes)],
+                limit: 1
             },
-        }
-    });
-
-    return results
-}
-
-export async function getCommentReplies(commentId: string) {
-
-    const conn = connect(config)
-
-    const db = drizzle(conn, { schema });
-
-    const results = await db.query.replies.findMany({
-        where: eq(replies.commentId, commentId),
-        with: {
-            fromUser: true,
-            replyingToUser: true
         }
     });
 

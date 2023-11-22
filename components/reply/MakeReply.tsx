@@ -1,61 +1,62 @@
 "use client"
-import { comment } from '@/types'
+import { reply } from '@/types'
 import React, { useRef, useState } from 'react'
 import { v4 as uuidv4 } from "uuid"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ZodError } from 'zod-validation-error'
 import useSeenErrors from '@/utility/useful/useSeenErrors'
-import { addComment } from '@/utility/serverFunctions/handleComments'
+import { addReply } from '@/utility/serverFunctions/handleReplies'
 
 
-export default function MakeComment({ seenPostId }: { seenPostId: string }) {
+export default function MakeReply({ seenCommentId, replyingToUserId }: { seenCommentId: string, replyingToUserId: string }) {
     const queryClient = useQueryClient()
 
     const [seenErrInput, seenErrInputSet] = useState<Error | ZodError | undefined>()
     const seenErrors = useSeenErrors(seenErrInput)
 
-    const { mutate: addCommentMutation } = useMutation({
-        mutationFn: addComment,
+    const { mutate: addReplyMutation } = useMutation({
+        mutationFn: addReply,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["seenComments"] })
+            queryClient.invalidateQueries({ queryKey: ["seenReplies"] })
         },
         onError: (err: Error | ZodError) => {
             seenErrInputSet(err)
         }
     })
 
-    const commentInitialValues: comment = {
+    const replyInitialValues: reply = {
         id: uuidv4(),
         userId: "b4aa351c-3f84-4b73-b581-ef5836fdf500",
-        postId: seenPostId,
+        commentId: seenCommentId,
+        replyingToUserId: replyingToUserId,
         datePosted: new Date(),
         message: "",
         likes: null
     }
 
 
-    const [commentObj, commentObjSet] = useState<comment>({ ...commentInitialValues })
+    const [replyObj, replyObjSet] = useState<reply>({ ...replyInitialValues })
 
     const handleSubmit = () => {
-        const localPostObj = { ...commentObj }
-        addCommentMutation(localPostObj)
+        const localReplyObj = { ...replyObj }
+        addReplyMutation(localReplyObj)
 
         //reset
-        commentObjSet({ ...commentInitialValues })
+        replyObjSet({ ...replyInitialValues })
     }
 
     return (
         <div>
             {seenErrors}
 
-            <label htmlFor='commentMessage'>Add Comment</label>
-            <input id='commentMessage' type='text' value={commentObj.message} onChange={(e) => commentObjSet(prevObj => {
+            <label htmlFor='replyMessage'>Add Reply</label>
+            <input id='replyMessage' type='text' value={replyObj.message} onChange={(e) => replyObjSet(prevObj => {
                 const newObj = { ...prevObj }
                 newObj.message = e.target.value
                 return newObj
-            })} placeholder='Enter a comment' />
+            })} placeholder='Enter a reply' />
 
-            <button onClick={handleSubmit}>send comment</button>
+            <button onClick={handleSubmit}>send reply</button>
         </div>
     )
 }
