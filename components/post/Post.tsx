@@ -1,4 +1,4 @@
-import { post } from '@/types'
+import { post, comment } from '@/types'
 import React, { useEffect, useState, useMemo } from 'react'
 import styles from "./style.module.css"
 import DisplayYTVideo from '@/utility/useful/DisplayYTVideo'
@@ -15,7 +15,7 @@ export default function DisplayPost({ seenPost, inPreviewMode }: { seenPost: pos
 
     const { data: comments, isLoading } = useQuery({
         queryKey: ["seenComments", seenPost.id, commentOffset],
-        queryFn: async () => await getPostComments(seenPost.id, commentOffset),
+        queryFn: async () => await getPostComments(seenPost.id, commentOffset) as unknown as comment[],
         refetchOnWindowFocus: false
     })
 

@@ -1,10 +1,12 @@
 "use server"
 
-import { comment, commentsSchema } from "@/types";
+import { comment, commentsSchema, newComment } from "@/types";
 import { comments, users, replies } from "@/db/schema"
 import { eq, desc } from "drizzle-orm";
 import { usableDb } from "@/db/index";
-
+import { authOptions } from '@/lib/auth/auth-options'
+import { getServerSession } from "next-auth";
+import { v4 as uuidv4 } from "uuid"
 
 export async function getPostComments(seenPostId: string, limitAmt: number) {
 
@@ -13,23 +15,30 @@ export async function getPostComments(seenPostId: string, limitAmt: number) {
         orderBy: [desc(comments.likes)],
         limit: limitAmt,
         with: {
-            fromUser: true,
-            replies: {
-                orderBy: [desc(replies.likes)],
-                limit: 1,
-                with: { fromUser: true, replyingToUser: true }
-            },
+            fromUser: true
         }
     });
 
     return results
 }
 
-export async function addComment(seenComment: comment) {
+export async function addComment(seenComment: newComment) {
 
-    commentsSchema.parse(seenComment)
 
-    await usableDb.insert(comments).values(seenComment);
+    const session = await getServerSession(authOptions)
+    if (!session) throw new Error("No session")
+
+    const newComment: comment = {
+        ...seenComment,
+        id: uuidv4(),
+        userId: session.user.id,
+        datePosted: new Date(),
+        likes: null
+    }
+
+    commentsSchema.parse(newComment)
+
+    await usableDb.insert(comments).values(newComment);
 }
 
 export async function getCommentUser(commentUserId: string) {
@@ -41,12 +50,14 @@ export async function getCommentUser(commentUserId: string) {
     return results[0]
 }
 
-export async function updateComment(newComment: comment) {
+export async function updateComment(newComment: Pick<comment, 'id' | "message">) {
 
-    commentsSchema.parse(newComment)
+    commentsSchema.parse(newComment.id)
 
     await usableDb.update(comments)
-        .set(newComment)
+        .set({
+            message: newComment.message
+        })
         .where(eq(comments.id, newComment.id));
 }
 

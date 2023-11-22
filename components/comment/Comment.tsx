@@ -6,21 +6,19 @@ import Moment from 'react-moment'
 import MakeReply from '../reply/MakeReply'
 import DisplayAllReplies from '../reply/DisplayAllReplies'
 import { useQuery } from "@tanstack/react-query"
-import { getAllCommentReplies } from '@/utility/serverFunctions/handleReplies'
+import { getCommentReplies } from '@/utility/serverFunctions/handleReplies'
 
 export default function Comment({ seenComment }: { seenComment: comment }) {
 
-    const [getAllReplies, getAllRepliesSet] = useState(false)
+    const [replyOffset, replyOffsetSet] = useState(1)
 
     const { data: replies, isLoading, error } = useQuery<reply[]>({
-        queryKey: ["seenReplies"],
-        enabled: getAllReplies,
-        queryFn: async () => await getAllCommentReplies(seenComment.id),
+        queryKey: ["seenReplies", seenComment.id, replyOffset],
+        queryFn: async () => await getCommentReplies(seenComment.id, replyOffset) as unknown as reply[],
         refetchOnWindowFocus: false
     })
 
     if (error) return <p>Couldn't fetch replies</p>
-
 
     return (
         <div style={{ paddingLeft: "2rem" }}>
@@ -34,18 +32,13 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
             <MakeReply seenCommentId={seenComment.id} replyingToUserId={seenComment.userId} />
 
             <div style={{ paddingLeft: "1rem" }}>
-                {getAllReplies ? (
+                {seenComment.replies && (
                     <>
-                        {replies && <DisplayAllReplies replies={replies} />}
-                    </>
-                ) : (
-                    <>
-                        {seenComment.replies && <DisplayAllReplies replies={seenComment.replies} />}
+                        <DisplayAllReplies replies={seenComment.replies} />
+                        <button onClick={() => replyOffsetSet(prev => prev + 15)}>Show More Replies</button>
                     </>
                 )}
             </div>
-
-            {!getAllReplies && <button onClick={() => getAllRepliesSet(true)}>Show More Replies</button>}
         </div>
     )
 }

@@ -1,6 +1,6 @@
 "use client"
 import { reply } from '@/types'
-import { getAllCommentReplies } from '@/utility/serverFunctions/handleReplies'
+import { getCommentReplies } from '@/utility/serverFunctions/handleReplies'
 import React, { useState } from 'react'
 import Moment from 'react-moment'
 import MakeReply from './MakeReply'

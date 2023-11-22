@@ -1,5 +1,5 @@
 "use client"
-import { reply } from '@/types'
+import { newReply, reply } from '@/types'
 import React, { useRef, useState } from 'react'
 import { v4 as uuidv4 } from "uuid"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -24,18 +24,14 @@ export default function MakeReply({ seenCommentId, replyingToUserId }: { seenCom
         }
     })
 
-    const replyInitialValues: reply = {
-        id: uuidv4(),
-        userId: "b4aa351c-3f84-4b73-b581-ef5836fdf500",
+    const replyInitialValues: newReply = {
         commentId: seenCommentId,
         replyingToUserId: replyingToUserId,
-        datePosted: new Date(),
         message: "",
-        likes: null
     }
 
 
-    const [replyObj, replyObjSet] = useState<reply>({ ...replyInitialValues })
+    const [replyObj, replyObjSet] = useState({ ...replyInitialValues })
 
     const handleSubmit = () => {
         const localReplyObj = { ...replyObj }

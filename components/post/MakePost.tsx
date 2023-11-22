@@ -1,5 +1,5 @@
 "use client"
-import { post } from '@/types'
+import { newPost, post } from '@/types'
 import { addPost } from '@/utility/serverFunctions/handlePosts'
 import React, { useRef, useState } from 'react'
 import { v4 as uuidv4 } from "uuid"
@@ -27,19 +27,15 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
         }
     })
 
-    const postInitialValues: post = {
-        id: uuidv4(),
-        userId: "",
+    const postInitialValues: newPost = {
         communityId: passedCommunityId,
         studySessionId: passedStudySessionId,
-        likes: null,
-        datePosted: new Date(),
         message: null,
         videoUrls: null,
         imageUrls: null
     }
 
-    const [postObj, postObjSet] = useState<post>({ ...postInitialValues })
+    const [postObj, postObjSet] = useState({ ...postInitialValues })
 
 
     const [usableVideoUrls, usableVideoUrlsSet] = useState<string[]>([])

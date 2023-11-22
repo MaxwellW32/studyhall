@@ -18,7 +18,7 @@ export type community = z.infer<typeof communitySchema> & {
     tags?: tag[]
 }
 
-export type newCommunity = Omit<community, "id" | "memberCount" | "userId">
+export type newCommunity = Pick<community, "name" | "description">
 
 
 
@@ -95,6 +95,7 @@ export type post = z.infer<typeof postSchema> & {
     comments?: comment[]
 }
 
+export type newPost = Pick<post, "communityId" | "studySessionId" | "message" | "videoUrls" | "imageUrls">
 
 
 
@@ -117,6 +118,12 @@ export type comment = z.infer<typeof commentsSchema> & {
     replies?: reply[],
 }
 
+export type newComment = Pick<comment, "postId" | "message">
+
+
+
+
+
 
 
 
@@ -135,6 +142,7 @@ export type reply = z.infer<typeof replySchema> & {
     fromUser?: user,
     replyingToUser?: user
 }
+export type newReply = Pick<reply, "replyingToUserId" | "commentId" | "message">
 
 
 

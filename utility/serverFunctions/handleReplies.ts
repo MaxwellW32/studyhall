@@ -1,17 +1,19 @@
 "use server"
 
-import { reply, replySchema } from "@/types";
+import { newReply, reply, replySchema } from "@/types";
 import { replies } from "@/db/schema"
 import { eq, desc } from "drizzle-orm";
 import { usableDb } from "@/db";
+import { authOptions } from '@/lib/auth/auth-options'
+import { getServerSession } from "next-auth";
+import { v4 as uuidv4 } from "uuid"
 
-
-export async function getAllCommentReplies(commentId: string) {
+export async function getCommentReplies(commentId: string, seenLimit: number) {
 
     const results = await usableDb.query.replies.findMany({
         where: eq(replies.commentId, commentId),
         orderBy: [desc(replies.likes)],
-        limit: 50,
+        limit: seenLimit,
         with: {
             fromUser: true,
             replyingToUser: true
@@ -21,22 +23,34 @@ export async function getAllCommentReplies(commentId: string) {
     return results
 }
 
-export async function addReply(seenReply: reply) {
+export async function addReply(seenReply: newReply) {
 
-    replySchema.parse(seenReply)
+    const session = await getServerSession(authOptions)
+    if (!session) throw new Error("No session")
 
-
-    await usableDb.insert(replies).values(seenReply);
-}
-
-
-export async function updateReply(newReply: reply) {
+    const newReply: reply = {
+        ...seenReply,
+        id: uuidv4(),
+        userId: session.user.id,
+        datePosted: new Date(),
+        likes: null
+    }
 
     replySchema.parse(newReply)
 
+    await usableDb.insert(replies).values(newReply);
+}
+
+
+export async function updateReply(newReply: Pick<reply, "id" | "message">) {
+
+    replySchema.parse(newReply.id)
+
 
     await usableDb.update(replies)
-        .set(newReply)
+        .set({
+            message: newReply.message
+        })
         .where(eq(replies.id, newReply.id));
 }
 

@@ -1,5 +1,5 @@
 "use client"
-import { comment } from '@/types'
+import { comment, newComment } from '@/types'
 import React, { useRef, useState } from 'react'
 import { v4 as uuidv4 } from "uuid"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -24,17 +24,13 @@ export default function MakeComment({ seenPostId }: { seenPostId: string }) {
         }
     })
 
-    const commentInitialValues: comment = {
-        id: uuidv4(),
-        userId: "b4aa351c-3f84-4b73-b581-ef5836fdf500",
+    const commentInitialValues: newComment = {
         postId: seenPostId,
-        datePosted: new Date(),
         message: "",
-        likes: null
     }
 
 
-    const [commentObj, commentObjSet] = useState<comment>({ ...commentInitialValues })
+    const [commentObj, commentObjSet] = useState({ ...commentInitialValues })
 
     const handleSubmit = () => {
         const localPostObj = { ...commentObj }
