@@ -18,6 +18,9 @@ export type community = z.infer<typeof communitySchema> & {
     tags?: tag[]
 }
 
+export type newCommunity = Omit<community, "id" | "memberCount" | "userId">
+
+
 
 
 
@@ -91,7 +94,6 @@ export type post = z.infer<typeof postSchema> & {
     tags?: tag[],
     comments?: comment[]
 }
-
 
 
 

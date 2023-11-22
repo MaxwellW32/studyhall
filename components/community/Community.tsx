@@ -4,11 +4,13 @@ import React, { useEffect, useState } from 'react'
 import styles from "./style.module.css"
 import DisplayPost from '../post/Post'
 import MakePost from '../post/MakePost'
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import DisplayAllPosts from '../post/DisplayAllPosts'
 // import { getPostsFromCommunity } from '@/utility/serverFunctions/handlePosts'
+import { addCommunity, deleteCommunity, getAllCommunities, updateCommunity } from "@/utility/serverFunctions/handleCommunities";
 
 export default function Community({ seenCommunity, inPreviewMode }: { seenCommunity: community, inPreviewMode?: boolean }) {
+  const queryClient = useQueryClient()
 
   // const { data: posts, isLoading, error } = useQuery({
   //   queryKey: ["seenPosts"],
@@ -17,6 +19,25 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
   //   })),
   //   refetchOnWindowFocus: false
   // })
+
+
+  const { mutate: updateCommunityMutation } = useMutation({
+    mutationFn: updateCommunity,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["seenCommunities"] })
+    },
+    onError: (err) => {
+    }
+  })
+
+  const { mutate: deleteCommunityMutation } = useMutation({
+    mutationFn: deleteCommunity,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["seenCommunities"] })
+    },
+    onError: (err) => {
+    }
+  })
 
   return (
     <div className={styles.communityMainDiv} style={{ minHeight: inPreviewMode ? "auto" : "100vh", borderRadius: inPreviewMode ? "2rem" : "0px" }}>

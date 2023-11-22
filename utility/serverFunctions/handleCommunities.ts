@@ -1,12 +1,17 @@
 "use server"
 
-import { community, communitySchema } from "@/types";
+import { community, communitySchema, newCommunity } from "@/types";
 import { communities, posts, comments, replies } from "@/db/schema"
 import { eq, desc, asc } from "drizzle-orm";
 import { usableDb } from "@/db";
+import { authOptions } from '@/lib/auth/auth-options'
+import { getServerSession } from "next-auth";
+import { v4 as uuidv4 } from "uuid"
+
 
 
 export async function getAllCommunities(seenLimit: number, seenOffset: number) {
+
     const results = await usableDb.query.communities.findMany({
         orderBy: [desc(communities.memberCount)],
         limit: seenLimit,
@@ -46,10 +51,21 @@ export async function getSpecificCommunity(seenCommunityID: string) {
     return result
 }
 
-export async function addCommunity(seenCommunity: community) {
-    communitySchema.parse(seenCommunity)
+export async function addCommunity(seenCommunity: newCommunity) {
 
-    await usableDb.insert(communities).values(seenCommunity);
+    const session = await getServerSession(authOptions)
+    if (!session) throw new Error("No session")
+
+    const finalCommunity: community = {
+        ...seenCommunity,
+        id: uuidv4(),
+        memberCount: 0,
+        userId: session.user.id
+    }
+
+    communitySchema.parse(finalCommunity)
+
+    await usableDb.insert(communities).values(finalCommunity);
 }
 
 export async function updateCommunity(seenCommunity: community) {

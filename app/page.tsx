@@ -1,27 +1,18 @@
 "use client"
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useState, useEffect, useRef } from "react"
-import { addCommunity, deleteCommunity, getAllCommunities, updateCommunity } from "@/utility/serverFunctions/handleCommunities";
-import { ZodError } from "zod-validation-error";
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+import { getAllCommunities } from "@/utility/serverFunctions/handleCommunities";
 import { community } from "@/types";
-import { v4 as uuidv4 } from "uuid"
 import Community from "@/components/community/Community";
-import { addUser, updateUser } from "@/utility/serverFunctions/handleUsers";
 import { useRouter } from 'next/navigation'
-import useSeenErrors from "@/utility/useful/useSeenErrors";
-// import { signOut } from 'next-auth/react';
+import Link from "next/link";
 
 export default function App() {
-  const queryClient = useQueryClient()
   const router = useRouter()
-
-  const [seenErrInput, seenErrInputSet] = useState<Error | ZodError | undefined>()
-  const seenErrors = useSeenErrors(seenErrInput)
 
   const [communityOffset, communityOffsetSet] = useState(0)
   const [communityLimit, communityLimitSet] = useState(50)
-
 
   const { data: communities, isLoading, error } = useQuery({
     queryKey: ["seenCommunities", communityLimit, communityOffset],
@@ -29,46 +20,21 @@ export default function App() {
     refetchOnWindowFocus: false
   })
 
-  const { mutate: addCommunityMutation } = useMutation({
-    mutationFn: addCommunity,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["seenCommunities"] })
-    },
-    onError: (err: Error | ZodError) => {
-      seenErrInputSet(err)
-    }
-  })
-
-  const { mutate: updateCommunityMutation } = useMutation({
-    mutationFn: updateCommunity,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["seenCommunities"] })
-    },
-    onError: (err) => {
-      seenErrInputSet(err)
-    }
-  })
-
-  const { mutate: deleteToDoMutation } = useMutation({
-    mutationFn: deleteCommunity,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["seenCommunities"] })
-    },
-    onError: (err) => {
-      seenErrInputSet(err)
-    }
-  })
-
-
   if (isLoading) return <div>Loading...</div>
 
   if (error) return <div>{error.message}</div>
 
+  if (!communities) return <div>No Communities</div>
+
   return (
     <main>
-      {seenErrors}
-
       <h1>Study Hall</h1>
+
+        <Link href={"/newCommunity"}>
+      <button>
+      Add a community
+      </button>
+        </Link>
 
       <div style={{ display: "grid", gap: "1rem" }}>
         {communities?.map((eachCommunity: community) => {
