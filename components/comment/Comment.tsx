@@ -18,7 +18,7 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
         refetchOnWindowFocus: false
     })
 
-    if (error) return <p>Couldn't fetch replies</p>
+    if (error) return <p>Couldn&apos;t fetch replies</p>
 
     return (
         <div style={{ paddingLeft: "2rem" }}>

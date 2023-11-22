@@ -45,9 +45,6 @@ export async function getSpecificCommunity(seenCommunityID: string) {
         }
     });
 
-    // const results = await db.select()
-    //     .from(communities)
-    //     .where(eq(communities.id, seenCommunityID))
     return result
 }
 
