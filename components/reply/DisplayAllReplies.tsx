@@ -5,7 +5,7 @@ import Reply from './Reply'
 export default function DisplayAllReplies({ replies }: { replies: reply[] }) {
     return (
         <div>
-            <p>Replies:</p>
+            <h2>Replies:</h2>
 
             <div>
                 {replies.map(eachReply => {

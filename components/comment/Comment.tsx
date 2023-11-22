@@ -10,11 +10,11 @@ import { getAllCommentReplies } from '@/utility/serverFunctions/handleReplies'
 
 export default function Comment({ seenComment }: { seenComment: comment }) {
 
-    const [getReplies, getRepliesSet] = useState(false)
+    const [getAllReplies, getAllRepliesSet] = useState(false)
 
     const { data: replies, isLoading, error } = useQuery<reply[]>({
         queryKey: ["seenReplies"],
-        enabled: getReplies,
+        enabled: getAllReplies,
         queryFn: async () => await getAllCommentReplies(seenComment.id),
         refetchOnWindowFocus: false
     })
@@ -23,7 +23,7 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
 
 
     return (
-        <div>
+        <div style={{ paddingLeft: "2rem" }}>
             <p> comment id{seenComment.id}</p>
             <p>from: {seenComment.fromUser?.username}</p>
             <p>posted: {<Moment fromNow>{seenComment.datePosted}</Moment>}</p>
@@ -33,17 +33,19 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
 
             <MakeReply seenCommentId={seenComment.id} replyingToUserId={seenComment.userId} />
 
-            {getReplies ? (
-                <>
-                    {replies && <DisplayAllReplies replies={replies} />}
-                </>
-            ) : (
-                <>
-                    {seenComment.replies && <DisplayAllReplies replies={seenComment.replies} />}
-                </>
-            )}
+            <div style={{ paddingLeft: "1rem" }}>
+                {getAllReplies ? (
+                    <>
+                        {replies && <DisplayAllReplies replies={replies} />}
+                    </>
+                ) : (
+                    <>
+                        {seenComment.replies && <DisplayAllReplies replies={seenComment.replies} />}
+                    </>
+                )}
+            </div>
 
-            {!getReplies && <button onClick={() => getRepliesSet(true)}>Show More Replies</button>}
+            {!getAllReplies && <button onClick={() => getAllRepliesSet(true)}>Show More Replies</button>}
         </div>
     )
 }

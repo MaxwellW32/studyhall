@@ -3,12 +3,12 @@
 import { reply, replySchema } from "@/types";
 import { replies } from "@/db/schema"
 import { eq, desc } from "drizzle-orm";
-import { db } from "@/db";
+import { usableDb } from "@/db";
 
 
 export async function getAllCommentReplies(commentId: string) {
 
-    const results = await db.query.replies.findMany({
+    const results = await usableDb.query.replies.findMany({
         where: eq(replies.commentId, commentId),
         orderBy: [desc(replies.likes)],
         limit: 50,
@@ -26,7 +26,7 @@ export async function addReply(seenReply: reply) {
     replySchema.parse(seenReply)
 
 
-    await db.insert(replies).values(seenReply);
+    await usableDb.insert(replies).values(seenReply);
 }
 
 
@@ -35,7 +35,7 @@ export async function updateReply(newReply: reply) {
     replySchema.parse(newReply)
 
 
-    await db.update(replies)
+    await usableDb.update(replies)
         .set(newReply)
         .where(eq(replies.id, newReply.id));
 }
@@ -46,5 +46,5 @@ export async function deleteComment(seenId: string) {
     replySchema.pick({ id: true }).parse(seenId)
 
 
-    await db.delete(replies).where(eq(replies.id, seenId));
+    await usableDb.delete(replies).where(eq(replies.id, seenId));
 }

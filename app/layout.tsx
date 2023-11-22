@@ -2,7 +2,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import QueryAndAuthWrapper from './QueryAndAuthWrapper'
 import { Metadata } from 'next'
-import { options } from './api/auth/[...nextauth]/options'
+import { authOptions } from '@/lib/auth/auth-options'
 import { getServerSession } from 'next-auth'
 // import { redirect } from 'next/navigation'
 
@@ -14,13 +14,15 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children, }: { children: React.ReactNode }) {
-  const session = await getServerSession(options)
+  const session = await getServerSession(authOptions)
 
   return (
     <html lang="en">
       <body className={inter.className}>
         <QueryAndAuthWrapper>
-          {/* <p>{session?.user.}</p> */}
+          <pre>
+            {JSON.stringify(session?.user)}
+          </pre>
           {children}
         </QueryAndAuthWrapper>
       </body>

@@ -44,31 +44,26 @@ export type studySession = z.infer<typeof studySessionSchema> & {
 
 
 
-
 export const userSchema = z.object({
     id: z.string().min(1),
     username: z.string().min(1),
     email: z.string().min(1),
-    name: z.string().min(1).nullable(),
-    password: z.string().min(1),
     createdAt: z.date(),
     updatedAt: z.date(),
+    name: z.string().min(1).nullable(),
     emailVerified: z.date().nullable(),
     image: z.string().min(1).nullable(),
 })
 
 export type user = z.infer<typeof userSchema> & {
     posts?: post[],
-    communitiesMade?: community,
+    communitiesMade?: community[],
     studySessionsMade?: studySession[],
     communitiesJoined?: community[],
     studySessionsJoined?: studySession[],
     comments?: comment[],
     replies?: reply[]
 }
-
-
-
 
 
 

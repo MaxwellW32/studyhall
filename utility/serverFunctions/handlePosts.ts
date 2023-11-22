@@ -4,12 +4,12 @@ import { post, postSchema } from "@/types";
 import * as schema from '@/db/schema';
 import { posts } from "@/db/schema"
 import { eq } from "drizzle-orm";
-import { db } from "@/db";
+import { usableDb } from "@/db";
 
 
 export async function getAllPosts() {
 
-    const results = await db.query.posts.findMany();
+    const results = await usableDb.query.posts.findMany();
     return results
 }
 
@@ -22,7 +22,7 @@ export async function addPost(seenPost: post) {
 
 
 
-    await db.insert(posts).values(newPost);
+    await usableDb.insert(posts).values(newPost);
 }
 
 export async function updatePost(seenPost: post) {
@@ -31,7 +31,7 @@ export async function updatePost(seenPost: post) {
 
 
 
-    await db.update(posts)
+    await usableDb.update(posts)
         .set(seenPost)
         .where(eq(posts.id, seenPost.id));
 }
@@ -42,5 +42,5 @@ export async function deletePost(seenPostId: string) {
 
 
 
-    await db.delete(posts).where(eq(posts.id, seenPostId));
+    await usableDb.delete(posts).where(eq(posts.id, seenPostId));
 }

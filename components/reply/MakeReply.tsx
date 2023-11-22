@@ -49,7 +49,6 @@ export default function MakeReply({ seenCommentId, replyingToUserId }: { seenCom
         <div>
             {seenErrors}
 
-            <label htmlFor='replyMessage'>Add Reply</label>
             <input id='replyMessage' type='text' value={replyObj.message} onChange={(e) => replyObjSet(prevObj => {
                 const newObj = { ...prevObj }
                 newObj.message = e.target.value

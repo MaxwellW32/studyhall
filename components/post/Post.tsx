@@ -10,12 +10,12 @@ import MakeComment from '../comment/MakeComment'
 import { getPostComments } from '@/utility/serverFunctions/handleComments'
 
 export default function DisplayPost({ seenPost, inPreviewMode }: { seenPost: post, inPreviewMode?: boolean }) {
-    const [getComments, getCommentsSet] = useState(false)
+
+    const [commentOffset, commentOffsetSet] = useState(1)
 
     const { data: comments, isLoading } = useQuery({
-        queryKey: ["seenComments"],
-        enabled: getComments,
-        queryFn: async () => await getPostComments(seenPost.id),
+        queryKey: ["seenComments", seenPost.id, commentOffset],
+        queryFn: async () => await getPostComments(seenPost.id, commentOffset),
         refetchOnWindowFocus: false
     })
 
@@ -34,12 +34,12 @@ export default function DisplayPost({ seenPost, inPreviewMode }: { seenPost: pos
                 <>
                     <p>message: {seenPost.message}</p>
                     <p>likes {seenPost.likes}</p>
-                    <p>Posted by: {seenPost.author && <span>{seenPost.author.firstName}<span style={{ color: "blue" }}>({seenPost.author.username})</span></span>}</p>
+                    <p>Posted by: {seenPost.author && <span>{seenPost.author.name}<span style={{ color: "blue" }}>({seenPost.author.username})</span></span>}</p>
 
                 </>
             ) : (
                 <>
-                    <p>Posted by: {seenPost.author && <span>{seenPost.author.firstName}<span style={{ color: "blue" }}>({seenPost.author.username})</span></span>}</p>
+                    <p>Posted by: {seenPost.author && <span>{seenPost.author.name}<span style={{ color: "blue" }}>({seenPost.author.username})</span></span>}</p>
                     <p>post id {seenPost.id}</p>
                     <p>message: {seenPost.message}</p>
                     <p>posted: <Moment fromNow>{seenPost.datePosted}</Moment></p>
@@ -66,15 +66,10 @@ export default function DisplayPost({ seenPost, inPreviewMode }: { seenPost: pos
 
                     <MakeComment seenPostId={seenPost.id} />
 
-                    {!getComments && <button onClick={() => getCommentsSet(true)}>Show Comments</button>}
-
-                    {getComments ? (
+                    {comments && (
                         <>
-                            {comments && <DisplayAllComments comments={comments} />}
-                        </>
-                    ) : (
-                        <>
-                            {seenPost.comments && <DisplayAllComments comments={seenPost.comments} />}
+                            <DisplayAllComments comments={comments} />
+                            <button onClick={() => commentOffsetSet(prev => prev + 5)}>Show More Comments</button>
                         </>
                     )}
 

@@ -9,7 +9,6 @@ export default function Reply({ seenReply }: { seenReply: reply }) {
 
     return (
         <div>
-            {/* <p> reply id{seenReply.id}</p> */}
             <p>from: {seenReply.fromUser?.username}</p>
             <p>replying to: {seenReply.replyingToUser?.username}</p>
 

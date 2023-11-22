@@ -5,7 +5,7 @@ import Comment from './Comment'
 export default function DisplayAllComments({ comments }: { comments: comment[] }) {
     return (
         <div>
-            <p>comments:</p>
+            <h2>comments:</h2>
 
             <div>
                 {comments.map(eachComment => {

@@ -3,19 +3,21 @@
 import { comment, commentsSchema } from "@/types";
 import { comments, users, replies } from "@/db/schema"
 import { eq, desc } from "drizzle-orm";
-import { db } from "@/db";
+import { usableDb } from "@/db/index";
 
 
-export async function getPostComments(seenPostId: string) {
+export async function getPostComments(seenPostId: string, limitAmt: number) {
 
-    const results = await db.query.comments.findMany({
+    const results = await usableDb.query.comments.findMany({
         where: eq(comments.postId, seenPostId),
         orderBy: [desc(comments.likes)],
+        limit: limitAmt,
         with: {
             fromUser: true,
             replies: {
                 orderBy: [desc(replies.likes)],
-                limit: 1
+                limit: 1,
+                with: { fromUser: true, replyingToUser: true }
             },
         }
     });
@@ -27,12 +29,12 @@ export async function addComment(seenComment: comment) {
 
     commentsSchema.parse(seenComment)
 
-    await db.insert(comments).values(seenComment);
+    await usableDb.insert(comments).values(seenComment);
 }
 
 export async function getCommentUser(commentUserId: string) {
 
-    const results = await db.select()
+    const results = await usableDb.select()
         .from(users)
         .where(eq(users.id, commentUserId))
 
@@ -43,7 +45,7 @@ export async function updateComment(newComment: comment) {
 
     commentsSchema.parse(newComment)
 
-    await db.update(comments)
+    await usableDb.update(comments)
         .set(newComment)
         .where(eq(comments.id, newComment.id));
 }
@@ -52,5 +54,5 @@ export async function deleteComment(seenId: string) {
 
     commentsSchema.pick({ id: true }).parse(seenId)
 
-    await db.delete(comments).where(eq(comments.id, seenId));
+    await usableDb.delete(comments).where(eq(comments.id, seenId));
 }

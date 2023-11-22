@@ -3,11 +3,11 @@
 import { community, communitySchema } from "@/types";
 import { communities, posts, comments, replies } from "@/db/schema"
 import { eq, desc, asc } from "drizzle-orm";
-import { db } from "@/db";
+import { usableDb } from "@/db";
 
 
 export async function getAllCommunities(seenLimit: number, seenOffset: number) {
-    const results = await db.query.communities.findMany({
+    const results = await usableDb.query.communities.findMany({
         orderBy: [desc(communities.memberCount)],
         limit: seenLimit,
         offset: seenOffset,
@@ -27,25 +27,14 @@ export async function getAllCommunities(seenLimit: number, seenOffset: number) {
 
 export async function getSpecificCommunity(seenCommunityID: string) {
 
-    const result = await db.query.communities.findFirst({
+    const result = await usableDb.query.communities.findFirst({
         where: eq(communities.id, seenCommunityID),
         with: {
             posts: {
                 orderBy: [desc(posts.datePosted)],
                 limit: 50,
                 with: {
-                    author: true,
-                    comments: {
-                        orderBy: [desc(comments.likes)],
-                        limit: 1,
-                        with: {
-                            fromUser: true,
-                            replies: {
-                                orderBy: [desc(replies.likes)],
-                                limit: 1
-                            },
-                        }
-                    }
+                    author: true
                 }
             }
         }
@@ -60,14 +49,14 @@ export async function getSpecificCommunity(seenCommunityID: string) {
 export async function addCommunity(seenCommunity: community) {
     communitySchema.parse(seenCommunity)
 
-    await db.insert(communities).values(seenCommunity);
+    await usableDb.insert(communities).values(seenCommunity);
 }
 
 export async function updateCommunity(seenCommunity: community) {
 
     communitySchema.parse(seenCommunity)
 
-    await db.update(communities)
+    await usableDb.update(communities)
         .set(seenCommunity)
         .where(eq(communities.id, seenCommunity.id));
 }
@@ -76,5 +65,5 @@ export async function deleteCommunity(seenId: string) {
 
     communitySchema.pick({ id: true }).parse(seenId)
 
-    await db.delete(communities).where(eq(communities.id, seenId));
+    await usableDb.delete(communities).where(eq(communities.id, seenId));
 }
