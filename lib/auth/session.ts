@@ -23,7 +23,7 @@ export const getCurrentUser = async () => {
       email: users.email,
       name: users.name,
       image: users.image,
-      createdAt: users.created_at,
+      createdAt: users.createdAt,
     })
     .from(users)
     .where(eq(users.id, session.user.id));
