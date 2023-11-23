@@ -81,7 +81,13 @@ input::placeholder {
 }
 
 
-
+.profileImage {
+    aspect-ratio: 1/1;
+    width: 2rem;
+    object-fit: cover;
+    object-position: center;
+    border-radius: .2rem;
+}
 
 
 

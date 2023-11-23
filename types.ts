@@ -90,8 +90,8 @@ export const postSchema = z.object({
 })
 export type post = z.infer<typeof postSchema> & {
     author?: user,
-    forCommunity?: community,
-    forStudySession?: studySession,
+    forCommunity?: community | null,
+    forStudySession?: studySession | null,
     tags?: tag[],
     comments?: comment[]
 }
