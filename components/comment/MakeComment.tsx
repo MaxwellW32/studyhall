@@ -41,7 +41,7 @@ export default function MakeComment({ seenPostId }: { seenPostId: string }) {
     }
 
     return (
-        <div>
+        <div onClick={(e) => e.stopPropagation()}>
             {seenErrors}
 
             <input id='commentMessage' type='text' value={commentObj.message} onChange={(e) => commentObjSet(prevObj => {

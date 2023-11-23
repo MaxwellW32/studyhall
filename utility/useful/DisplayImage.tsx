@@ -18,6 +18,6 @@ export default function DisplayImage({ imageID }: { imageID: string }) {
     }, [])
 
     return (
-        <img ref={imageRef} style={{ objectFit: "contain", maxWidth: "100%", height: "100%" }} src={imageID} />
+        <img ref={imageRef} style={{ objectFit: "contain", maxWidth: "100%" }} src={imageID} />
     );
 }

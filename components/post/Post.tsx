@@ -12,6 +12,7 @@ import { getPostComments } from '@/utility/serverFunctions/handleComments'
 import Link from 'next/link'
 import { likePost } from '@/utility/serverFunctions/handlePosts'
 import getNiceUsername from '@/utility/useful/getNiceUsername'
+import getNiceUrl from '@/utility/useful/getNiceUrl'
 
 export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPreviewMode?: boolean }) {
 
@@ -47,7 +48,7 @@ export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPr
 
             {inPreviewMode ? (
                 <>
-                    {getNiceUsername("u/", seenPost.author?.name, seenPost.author?.username)}
+                    {seenPost.author && <>{getNiceUsername("u/", seenPost.author)}</>}
 
                     <div style={{ display: "flex", gap: ".5rem", alignItems: 'center' }}>
                         {seenPost.likes && <p style={{ marginRight: "-.2rem" }}>{seenPost.likes}</p>}
@@ -64,7 +65,7 @@ export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPr
             ) : (
                 <>
                     <div style={{ display: "flex", gap: "1rem" }}>
-                        {getNiceUsername("u/", seenPost.author?.name, seenPost.author?.username)}
+                        {seenPost.author && <>{getNiceUsername("u/", seenPost.author)}</>}
                         <p className='timeText'><Moment fromNow>{seenPost.datePosted}</Moment></p>
                     </div>
 

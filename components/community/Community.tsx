@@ -13,6 +13,7 @@ import { useInView } from 'react-intersection-observer'
 import Link from 'next/link'
 import getNiceUsername from '@/utility/useful/getNiceUsername'
 import { useSession } from 'next-auth/react';
+import getNiceUrl from '@/utility/useful/getNiceUrl'
 
 export default function Community({ seenCommunity, inPreviewMode }: { seenCommunity: community, inPreviewMode?: boolean }) {
   const queryClient = useQueryClient()
@@ -46,7 +47,10 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
       {inPreviewMode ? (
         <>
           <div style={{ display: "grid", gap: "1rem" }}>
-            <p><span style={{ fontStyle: "italic" }}>sh/</span>{seenCommunity.name}</p>
+
+            <Link className='showUnderline' style={{ display: "inline", justifySelf: "flex-start" }} href={getNiceUrl("community", seenCommunity.id, seenCommunity.name)}>
+              sh/{seenCommunity.name}
+            </Link>
 
             {seenCommunity.posts && <DisplayAllPosts posts={seenCommunity.posts} inPreviewMode={inPreviewMode} />}
           </div>
@@ -78,12 +82,12 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
             </>
           )}
 
-          <MakePost passedCommunityId={seenCommunity.id} passedStudySessionId={null} />
+          <MakePost passedCommunity={seenCommunity} passedStudySession={null} />
 
-          <button onClick={() => {
+          <button style={{ marginTop: "3rem" }} onClick={() => {
             postQueryEnabledSet(true)
             postLimitSet(prev => prev + 2)
-          }}>Load More</button>
+          }}>More Posts</button>
         </>
       )}
     </div>

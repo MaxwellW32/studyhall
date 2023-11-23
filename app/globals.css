@@ -36,6 +36,11 @@ h3 {
     font-weight: bold;
 }
 
+label {
+    font-weight: bold;
+    margin: 1rem 0rem .3rem 0rem;
+}
+
 /*h4{}
 h5{} */
 
@@ -52,11 +57,55 @@ button {
     border-radius: .5rem;
 }
 
+button:hover {
+    filter: brightness(.8);
+}
+
 input {
     padding: 1rem;
     color: #000;
 }
 
+input+button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+
+input::placeholder {
+    text-transform: capitalize;
+}
+
 .timeText {
     font-style: italic;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* action styling */
+
+.highlightMouseOver {
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.highlightMouseOver:hover {
+    background-color: var(--highlightedColor);
+}
+
+.noScrollBar::-webkit-scrollbar {
+    display: none;
+}
+
+.showUnderline:hover {
+    text-decoration: underline;
 }

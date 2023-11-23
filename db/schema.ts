@@ -177,7 +177,7 @@ export const posts = mysqlTable("posts", {
     id: varchar("id", { length: 255 }).primaryKey().notNull(),
     userId: varchar("user_id", { length: 255 }).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
-    communityId: varchar("community_id", { length: 255 }).notNull(),
+    communityId: varchar("community_id", { length: 255 }),
     studySessionId: varchar("study_session_id", { length: 255 }),
     likes: int("likes").default(0).notNull(),
     datePosted: datetime("date_posted").notNull(),

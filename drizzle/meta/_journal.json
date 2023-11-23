@@ -176,6 +176,13 @@
       "when": 1700723219997,
       "tag": "0024_curious_garia",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1700753864207,
+      "tag": "0025_fast_wonder_man",
+      "breakpoints": true
     }
   ]
 }

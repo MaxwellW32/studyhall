@@ -80,7 +80,7 @@ export const postSchema = z.object({
     id: z.string().min(1),
     userId: z.string().min(1),
     title: z.string().min(1),
-    communityId: z.string().min(1),
+    communityId: z.string().min(1).nullable(),
     studySessionId: z.string().min(1).nullable(),
     likes: z.number(),
     datePosted: z.date(),
