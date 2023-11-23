@@ -3,7 +3,6 @@ import './globals.css'
 import QueryWrapper from '../components/home/QueryWrapper'
 import { Metadata } from 'next'
 import NavBar from '@/components/home/NavBar'
-
 import { getServerSession } from "next-auth"
 import SessionProvider from "@/components/home/SessionProvider"
 

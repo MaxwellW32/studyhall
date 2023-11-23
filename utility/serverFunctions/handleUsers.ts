@@ -5,6 +5,7 @@ import { users } from "@/db/schema"
 import { drizzle } from "drizzle-orm/planetscale-serverless"
 import { eq } from "drizzle-orm";
 import { usableDb } from "@/db";
+import { getServerSession } from "next-auth";
 
 
 export async function getAllUsers() {
@@ -30,7 +31,6 @@ export async function getSpecificUser(seenStr: string, option: "id" | "username"
         return user
     }
 }
-
 
 export async function addUser(seenUser: user) {
 

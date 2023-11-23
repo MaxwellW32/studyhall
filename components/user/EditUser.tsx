@@ -1,3 +1,4 @@
+"use client"
 import { user } from "@/types";
 
 //show user is a page

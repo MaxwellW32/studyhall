@@ -1,3 +1,3 @@
 export { default } from "next-auth/middleware"
 
-export const config = { matcher: ["/newCommunity", "/newCommunity/edit/:path*"] }
+export const config = { matcher: ["/newCommunity", "/newCommunity/edit/:path*", "/user/edit/:path*"] }
