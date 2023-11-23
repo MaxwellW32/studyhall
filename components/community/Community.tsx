@@ -57,20 +57,21 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
         </>
       ) : (
         <>
-          {seenCommunity.userId === session?.user.id && <div style={{ justifySelf: 'flex-end', display: "flex", gap: "1rem" }}>
-            <Link href={`/newCommunity/edit/${seenCommunity.id}`}>
-              <button>Update community</button>
-            </Link>
+          <div style={{ backgroundColor: "#888", padding: "1rem", display: "grid", marginBottom: "2rem" }}>
+            <h3>Welcome to {seenCommunity.name}</h3>
 
-            <Link href={`/newCommunity/edit/${seenCommunity.id}`}>
-              <button>Delete community</button>
-            </Link>
-          </div>}
+            <p style={{ maxWidth: "700px", marginBottom: "1rem" }}>{seenCommunity.description}</p>
 
-          <h3>Welcome to {seenCommunity.name}</h3>
+            {seenCommunity.userId === session?.user.id && <div style={{ justifySelf: 'flex-end', display: "flex", gap: "1rem" }}>
+              <Link href={`/newCommunity/edit/${seenCommunity.id}`}>
+                <button>Update community</button>
+              </Link>
 
-          <p style={{ maxWidth: "700px", marginBottom: "1rem" }}>{seenCommunity.description}</p>
-
+              <Link href={`/newCommunity/edit/${seenCommunity.id}`}>
+                <button>Delete community</button>
+              </Link>
+            </div>}
+          </div>
 
           {postQueryEnabled ? (
             <>

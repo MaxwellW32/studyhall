@@ -7,6 +7,9 @@ import { usableDb } from "@/db/index";
 import { authOptions } from '@/lib/auth/auth-options'
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid"
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { sql } from 'drizzle-orm'
 
 export async function getPostComments(seenPostId: string, limitAmt: number) {
 
@@ -59,6 +62,18 @@ export async function updateComment(newComment: Pick<comment, 'id' | "message">)
             message: newComment.message
         })
         .where(eq(comments.id, newComment.id));
+}
+
+export async function likeComment(commentId: string) {
+
+    const session = await getServerSession(authOptions)
+    if (!session) redirect("/api/auth/signIn")
+
+    await usableDb.update(comments)
+        .set({ likes: sql`${comments.likes} + 1` })
+        .where(eq(comments.id, commentId));
+
+    revalidatePath("/")
 }
 
 export async function deleteComment(seenId: string) {

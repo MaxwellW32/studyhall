@@ -44,6 +44,9 @@ export async function getSpecificCommunity(seenCommunityID: string) {
                     comments: {
                         orderBy: [desc(comments.likes)],
                         limit: 2,
+                        with: {
+                            fromUser: true
+                        }
                     }
                 }
             }

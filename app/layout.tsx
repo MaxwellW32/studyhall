@@ -5,6 +5,8 @@ import { Metadata } from 'next'
 import NavBar from '@/components/home/NavBar'
 import { getServerSession } from "next-auth"
 import SessionProvider from "@/components/home/SessionProvider"
+import { authOptions } from '@/lib/auth/auth-options'
+import { getSpecificUser } from '@/utility/serverFunctions/handleUsers'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -14,14 +16,14 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children, }: { children: React.ReactNode }) {
-  const session = await getServerSession()
+  const session = await getServerSession(authOptions)
 
   return (
     <html lang="en">
       <body className={inter.className}>
         <SessionProvider session={session}>
           <QueryWrapper>
-            <NavBar />
+            <NavBar seenUser={session ? await getSpecificUser(session.user.id, "id") : undefined} />
             {children}
           </QueryWrapper>
         </SessionProvider>

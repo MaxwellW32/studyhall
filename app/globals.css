@@ -27,7 +27,10 @@ body {
 
 .smallText {}
 
-h1 {}
+h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
 
 h2 {}
 
@@ -90,7 +93,14 @@ input::placeholder {
 }
 
 
+.replySvg {
+    /* transform: scaleX(-1); */
+}
 
+.wordLink {
+    font-style: italic;
+    cursor: pointer;
+}
 
 
 

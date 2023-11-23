@@ -2,11 +2,13 @@
 
 import { newReply, reply, replySchema } from "@/types";
 import { replies } from "@/db/schema"
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { usableDb } from "@/db";
 import { authOptions } from '@/lib/auth/auth-options'
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid"
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function getCommentReplies(commentId: string, seenLimit: number) {
 
@@ -54,6 +56,18 @@ export async function updateReply(newReply: Pick<reply, "id" | "message">) {
         .where(eq(replies.id, newReply.id));
 }
 
+
+export async function likeReply(replyId: string) {
+
+    const session = await getServerSession(authOptions)
+    if (!session) redirect("/api/auth/signIn")
+
+    await usableDb.update(replies)
+        .set({ likes: sql`${replies.likes} + 1` })
+        .where(eq(replies.id, replyId));
+
+    revalidatePath("/")
+}
 
 export async function deleteComment(seenId: string) {
 

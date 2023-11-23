@@ -65,7 +65,7 @@ export default function MakeCommunity({ oldCommunity }: { oldCommunity?: communi
         <div className={styles.makeCommunityMainDiv}>
             {seenErrors}
 
-            <h1>MakeCommunity</h1>
+            <h1>Let's Add Something To The World!</h1>
 
             <label>Community Name</label>
             <input type='text' value={communityObj.name} onChange={(e) => {
