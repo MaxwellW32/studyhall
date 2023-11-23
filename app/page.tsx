@@ -6,11 +6,12 @@ import { getAllCommunities } from "@/utility/serverFunctions/handleCommunities";
 import { community } from "@/types";
 import Community from "@/components/community/Community";
 import { useRouter } from 'next/navigation'
-import Link from "next/link";
+import deleteAll from "@/utility/serverFunctions/handleAll";
+import getNiceUrl from "@/utility/useful/getNiceUrl";
 
 export default function App() {
   const router = useRouter()
-
+  
   const [communityOffset, communityOffsetSet] = useState(0)
   const [communityLimit, communityLimitSet] = useState(50)
 
@@ -30,17 +31,15 @@ export default function App() {
     <main>
       <h1>Study Hall</h1>
 
-        <Link href={"/newCommunity"}>
-      <button>
-      Add a community
-      </button>
-        </Link>
+      <button onClick={()=>router.push("/newCommunity")}>
+        Add a community
+        </button>
 
       <div style={{ display: "grid", gap: "1rem" }}>
         {communities?.map((eachCommunity: community) => {
           return (
-            <div key={eachCommunity.id} onClick={() => { router.push(`/community/${eachCommunity.id}/${eachCommunity.name.toLowerCase().replace(/ /g, '_')}`) }}>
-              <Community seenCommunity={eachCommunity} inPreviewMode={true} />
+            <div key={eachCommunity.id} onClick={() => { router.push(getNiceUrl("community", eachCommunity.id, eachCommunity.name)) }}>
+              <Community seenCommunity={eachCommunity} inPreviewMode={true}/>
             </div>
           )
         })}

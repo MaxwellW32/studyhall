@@ -7,6 +7,7 @@ import { usableDb } from "@/db";
 import { authOptions } from '@/lib/auth/auth-options'
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid"
+import { revalidatePath } from "next/cache";
 
 
 
@@ -18,8 +19,8 @@ export async function getAllCommunities(seenLimit: number, seenOffset: number) {
         offset: seenOffset,
         with: {
             posts: {
-                limit: 3,
                 orderBy: [desc(posts.likes)],
+                limit: 3,
                 with: {
                     author: true
                 }
@@ -36,10 +37,14 @@ export async function getSpecificCommunity(seenCommunityID: string) {
         where: eq(communities.id, seenCommunityID),
         with: {
             posts: {
-                orderBy: [desc(posts.datePosted)],
-                limit: 50,
+                orderBy: [desc(posts.likes)],
+                limit: 2,
                 with: {
-                    author: true
+                    author: true,
+                    comments: {
+                        orderBy: [desc(comments.likes)],
+                        limit: 2,
+                    }
                 }
             }
         }
@@ -65,13 +70,19 @@ export async function addCommunity(seenCommunity: newCommunity) {
     await usableDb.insert(communities).values(finalCommunity);
 }
 
-export async function updateCommunity(seenCommunity: community) {
+export async function updateCommunity(seenCommunity: Omit<community, "memberCount" | "userId">) {
 
-    communitySchema.parse(seenCommunity)
+    communitySchema.omit({ memberCount: true, userId: true }).parse(seenCommunity)
 
     await usableDb.update(communities)
-        .set(seenCommunity)
+        .set({
+            name: seenCommunity.name,
+            description: seenCommunity.description,
+        })
         .where(eq(communities.id, seenCommunity.id));
+
+
+    revalidatePath("/")
 }
 
 export async function deleteCommunity(seenId: string) {

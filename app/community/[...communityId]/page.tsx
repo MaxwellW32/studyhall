@@ -7,7 +7,7 @@ export default async function CommunityPageLoader({ params }: { params: { commun
 
     const seenCommunityId = params.communityId[0]
 
-    const foundCommunity: community = await getSpecificCommunity(seenCommunityId) as unknown as community
+    const foundCommunity: (community | undefined) = await getSpecificCommunity(seenCommunityId)
 
     if (!foundCommunity) return <p>Community Not Found</p>
 

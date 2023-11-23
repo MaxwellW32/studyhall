@@ -1,0 +1,1 @@
+ALTER TABLE `posts` MODIFY COLUMN `community_id` varchar(255) NOT NULL;

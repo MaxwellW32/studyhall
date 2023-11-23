@@ -1,70 +1,7 @@
-"use client"
 import React from 'react'
-import { community, newCommunity } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useState, useEffect, useRef, useMemo } from "react"
-import { addCommunity } from "@/utility/serverFunctions/handleCommunities";
-import { ZodError } from "zod-validation-error";
-import useSeenErrors from "@/utility/useful/useSeenErrors";
-import styles from "./style.module.css"
-import { useRouter } from 'next/navigation';
 
-const initialCommunityObj: newCommunity = {
-    name: "",
-    description: "",
-}
+import MakeCommunity from '@/components/community/MakeCommunity';
 
-export default function MakeCommunity() {
-    const router = useRouter()
-    const [seenErrInput, seenErrInputSet] = useState<Error | ZodError | undefined>()
-    const seenErrors = useSeenErrors(seenErrInput)
-
-    const queryClient = useQueryClient()
-
-    const { mutate: addCommunityMutation } = useMutation({
-        mutationFn: addCommunity,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["seenCommunities"] })
-            router.push("/")
-        },
-        onError: (err: Error | ZodError) => {
-            seenErrInputSet(err)
-        }
-    })
-
-
-    const [communityObj, communityObjSet] = useState<newCommunity>({ ...initialCommunityObj })
-
-    const handleSubmit = () => {
-        addCommunityMutation(communityObj)
-        communityObjSet({ ...initialCommunityObj })
-    }
-
-    return (
-        <div className={styles.makeCommunityMainDiv}>
-            {seenErrors}
-
-            <h1>MakeCommunity</h1>
-
-            <label>Community Name</label>
-            <input type='text' value={communityObj.name} onChange={(e) => {
-                communityObjSet(prevObj => {
-                    const newObj = { ...prevObj }
-                    newObj.name = e.target.value
-                    return newObj
-                })
-            }} placeholder='Please enter a name' />
-
-            <label>Description</label>
-            <input type='text' value={communityObj.description} onChange={(e) => {
-                communityObjSet(prevObj => {
-                    const newObj = { ...prevObj }
-                    newObj.description = e.target.value
-                    return newObj
-                })
-            }} placeholder='Please enter a desctiprion' />
-
-            <button onClick={handleSubmit}>Add Community</button>
-        </div>
-    )
+export default function NewCommunity() {
+    return <MakeCommunity />
 }

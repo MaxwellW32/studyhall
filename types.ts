@@ -79,7 +79,8 @@ export type user = z.infer<typeof userSchema> & {
 export const postSchema = z.object({
     id: z.string().min(1),
     userId: z.string().min(1),
-    communityId: z.string().min(1).nullable(),
+    title: z.string().min(1),
+    communityId: z.string().min(1),
     studySessionId: z.string().min(1).nullable(),
     likes: z.number().nullable(),
     datePosted: z.date(),
@@ -95,7 +96,7 @@ export type post = z.infer<typeof postSchema> & {
     comments?: comment[]
 }
 
-export type newPost = Pick<post, "communityId" | "studySessionId" | "message" | "videoUrls" | "imageUrls">
+export type newPost = Pick<post, "communityId" | "studySessionId" | "message" | "videoUrls" | "imageUrls" | "title">
 
 
 

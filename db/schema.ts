@@ -176,7 +176,8 @@ export const tagsRelations = relations(tags, ({ many }) => ({
 export const posts = mysqlTable("posts", {
     id: varchar("id", { length: 255 }).primaryKey().notNull(),
     userId: varchar("user_id", { length: 255 }).notNull(),
-    communityId: varchar("community_id", { length: 255 }),
+    title: varchar("title", { length: 255 }).notNull(),
+    communityId: varchar("community_id", { length: 255 }).notNull(),
     studySessionId: varchar("study_session_id", { length: 255 }),
     likes: int("likes"),
     datePosted: datetime("date_posted").notNull(),

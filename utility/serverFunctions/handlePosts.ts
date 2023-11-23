@@ -2,7 +2,7 @@
 
 import { newPost, post, postSchema } from "@/types";
 import * as schema from '@/db/schema';
-import { posts } from "@/db/schema"
+import { posts, comments } from "@/db/schema"
 import { eq, desc } from "drizzle-orm";
 import { usableDb } from "@/db";
 import { authOptions } from '@/lib/auth/auth-options'
@@ -10,28 +10,38 @@ import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid"
 import { revalidatePath } from "next/cache";
 
-export async function getTopPosts(communityId: string, seenLimit: number) {
+export async function getTopPosts(communityId: string, seenLimit: number, seenOffset: number) {
 
     const results = await usableDb.query.posts.findMany({
         where: eq(posts.communityId, communityId),
         orderBy: [desc(posts.likes)],
         limit: seenLimit,
+        offset: seenOffset,
         with: {
-            author: true
+            author: true,
+            comments: {
+                orderBy: [desc(comments.likes)],
+                limit: 2
+            }
         }
     });
 
     return results
 }
 
-export async function getLatestPosts(communityId: string, seenLimit: number) {
+export async function getLatestPosts(communityId: string, seenLimit: number, seenOffset: number) {
 
     const results = await usableDb.query.posts.findMany({
         where: eq(posts.communityId, communityId),
         orderBy: [desc(posts.datePosted)],
         limit: seenLimit,
+        offset: seenOffset,
         with: {
-            author: true
+            author: true,
+            comments: {
+                orderBy: [desc(comments.likes)],
+                limit: 2
+            }
         }
     });
 
@@ -40,6 +50,28 @@ export async function getLatestPosts(communityId: string, seenLimit: number) {
 
 }
 
+export async function getSpecificPost(postId: string) {
+
+    const results = await usableDb.query.posts.findFirst({
+        where: eq(posts.id, postId),
+        with: {
+            forCommunity: true,
+            author: true,
+            comments: {
+                limit: 10,
+                with: {
+                    replies: {
+                        limit: 1
+                    }
+                }
+            }
+        }
+    });
+
+    return results
+
+
+}
 
 export async function addPost(seenPost: newPost) {
 

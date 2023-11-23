@@ -10,11 +10,11 @@ import { getCommentReplies } from '@/utility/serverFunctions/handleReplies'
 
 export default function Comment({ seenComment }: { seenComment: comment }) {
 
-    const [replyOffset, replyOffsetSet] = useState(1)
+    const [replyLimit, replyLimitSet] = useState(1)
 
     const { data: replies, isLoading, error } = useQuery<reply[]>({
-        queryKey: ["seenReplies", seenComment.id, replyOffset],
-        queryFn: async () => await getCommentReplies(seenComment.id, replyOffset),
+        queryKey: ["seenReplies", seenComment.id, replyLimit],
+        queryFn: async () => await getCommentReplies(seenComment.id, replyLimit),
         refetchOnWindowFocus: false
     })
 
@@ -35,7 +35,7 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
                 {replies && (
                     <>
                         <DisplayAllReplies replies={replies} />
-                        <button onClick={() => replyOffsetSet(prev => prev + 15)}>Show More Replies</button>
+                        <button onClick={() => replyLimitSet(prev => prev + 15)}>Show More Replies</button>
                     </>
                 )}
             </div>

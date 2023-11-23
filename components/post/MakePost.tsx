@@ -11,7 +11,7 @@ import DisplayImage from '@/utility/useful/DisplayImage'
 
 
 
-export default function MakePost({ passedCommunityId, passedStudySessionId }: { passedCommunityId: null | string, passedStudySessionId: null | string }) {
+export default function MakePost({ passedCommunityId, passedStudySessionId }: { passedCommunityId: string, passedStudySessionId: null | string }) {
     const queryClient = useQueryClient()
 
     const [seenErrInput, seenErrInputSet] = useState<Error | ZodError | undefined>()
@@ -30,6 +30,7 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
     const postInitialValues: newPost = {
         communityId: passedCommunityId,
         studySessionId: passedStudySessionId,
+        title: "",
         message: null,
         videoUrls: null,
         imageUrls: null
@@ -65,6 +66,15 @@ export default function MakePost({ passedCommunityId, passedStudySessionId }: { 
             {seenErrors}
 
             <div>
+                <label htmlFor='titleIdentifier'>Title</label>
+                <input id='titleIdentifier' type='text' value={postObj.title}
+                    onChange={(e) => postObjSet(prevPostObj => {
+                        const newPostObj = { ...prevPostObj }
+                        newPostObj.title = e.target.value
+
+                        return newPostObj
+                    })} />
+
 
                 <label htmlFor='messagesIdentifier'>Messages</label>
                 <input id='messagesIdentifier' type='text' value={postObj.message ?? ""}
