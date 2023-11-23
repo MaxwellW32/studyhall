@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --highlightedColor: rgb(247, 101, 101);
+}
+
 *,
 *::before,
 *::after {
@@ -10,11 +14,40 @@
 }
 
 html {
-    background-color: #333;
+    background-color: #222;
     color: #fff;
 }
 
 body {
     margin: 0;
     padding: 0;
+}
+
+.bigText {}
+
+.smallText {}
+
+h1 {}
+
+h2 {}
+
+h3 {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+/*h4{}
+h5{} */
+
+svg {
+    aspect-ratio: 1/1;
+    width: 1rem;
+    fill: white;
+    cursor: pointer;
+}
+
+button {
+    padding: 1rem;
+    background-color: #111;
+    border-radius: .5rem;
 }

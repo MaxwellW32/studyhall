@@ -82,7 +82,7 @@ export const postSchema = z.object({
     title: z.string().min(1),
     communityId: z.string().min(1),
     studySessionId: z.string().min(1).nullable(),
-    likes: z.number().nullable(),
+    likes: z.number(),
     datePosted: z.date(),
     message: z.string().min(1).nullable(),
     videoUrls: z.string().min(1).nullable(),
@@ -111,7 +111,7 @@ export const commentsSchema = z.object({
     postId: z.string().min(1),
     datePosted: z.date(),
     message: z.string().min(1),
-    likes: z.number().nullable()
+    likes: z.number()
 })
 export type comment = z.infer<typeof commentsSchema> & {
     parentPost?: post,
@@ -136,7 +136,7 @@ export const replySchema = z.object({
     commentId: z.string().min(1),
     datePosted: z.date(),
     message: z.string().min(1),
-    likes: z.number().nullable()
+    likes: z.number()
 })
 export type reply = z.infer<typeof replySchema> & {
     fromComment?: comment,

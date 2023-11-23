@@ -2,16 +2,12 @@
 import { community, post } from '@/types'
 import React, { Fragment, useEffect, useState } from 'react'
 import styles from "./style.module.css"
-import Post from '../post/Post'
 import MakePost from '../post/MakePost'
 import {
-  useMutation, useQuery, useQueryClient, useInfiniteQuery,
-  QueryClient,
-  QueryClientProvider
+  useMutation, useQuery, useQueryClient,
 } from "@tanstack/react-query"
 import DisplayAllPosts from '../post/DisplayAllPosts'
-// import { getPostsFromCommunity } from '@/utility/serverFunctions/handlePosts'
-import { addCommunity, deleteCommunity, getAllCommunities, updateCommunity } from "@/utility/serverFunctions/handleCommunities";
+import { deleteCommunity } from "@/utility/serverFunctions/handleCommunities";
 import { getTopPosts } from '@/utility/serverFunctions/handlePosts'
 import { useInView } from 'react-intersection-observer'
 import Link from 'next/link'
@@ -25,7 +21,7 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
   const [postLimit, postLimitSet] = useState(seenCommunity.posts?.length ?? 1)
   const [postOffset, postOffsetSet] = useState(0)
 
-  const { data: posts, isLoading, error: posterror } = useQuery({
+  const { data: posts, isLoading, error } = useQuery({
     enabled: postQueryEnabled,
     queryKey: ["seenPosts", postLimit, postOffset],
     queryFn: async () => await getTopPosts(seenCommunity.id, postLimit, postOffset),
@@ -46,10 +42,7 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
       {inPreviewMode ? (
         <>
           <div style={{ display: "grid", gap: "1rem" }}>
-            <p>Name: {seenCommunity.name}</p>
-            <p>Description: {seenCommunity.description}</p>
-
-            <p>Top Posts</p>
+            <p>sh/{seenCommunity.name}</p>
 
             {seenCommunity.posts && <DisplayAllPosts posts={seenCommunity.posts} inPreviewMode={inPreviewMode} />}
           </div>

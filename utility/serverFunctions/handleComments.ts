@@ -33,7 +33,7 @@ export async function addComment(seenComment: newComment) {
         id: uuidv4(),
         userId: session.user.id,
         datePosted: new Date,
-        likes: null
+        likes: 0
     }
 
     commentsSchema.parse(newComment)

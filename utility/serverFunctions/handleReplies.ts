@@ -33,7 +33,7 @@ export async function addReply(seenReply: newReply) {
         id: uuidv4(),
         userId: session.user.id,
         datePosted: new Date,
-        likes: null
+        likes: 0
     }
 
     replySchema.parse(newReply)

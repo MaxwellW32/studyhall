@@ -9,6 +9,8 @@ import { authOptions } from '@/lib/auth/auth-options'
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid"
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { sql } from 'drizzle-orm'
 
 export async function getTopPosts(communityId: string, seenLimit: number, seenOffset: number) {
 
@@ -83,7 +85,7 @@ export async function addPost(seenPost: newPost) {
         id: uuidv4(),
         userId: session.user.id,
         datePosted: new Date,
-        likes: null
+        likes: 0
     }
 
     postSchema.parse(newPost)
@@ -92,6 +94,19 @@ export async function addPost(seenPost: newPost) {
 
     revalidatePath("/")
 }
+
+export async function likePost(postId: string) {
+
+    const session = await getServerSession(authOptions)
+    if (!session) redirect("/api/auth/signIn")
+
+    await usableDb.update(posts)
+        .set({ likes: sql`${posts.likes} + 1` })
+        .where(eq(posts.id, postId));
+
+    revalidatePath("/")
+}
+
 
 export async function updatePost(seenPost: post) {
 

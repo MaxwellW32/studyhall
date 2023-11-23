@@ -130,7 +130,7 @@ export const communitiesRelations = relations(communities, ({ one, many }) => ({
 
 // export type communityTest = typeof communities.$inferSelect;
 // export type userTest = typeof users.$inferSelect;
-// export type postTest = typeof posts.$inferSelect;
+export type postTest = typeof posts.$inferSelect;
 
 
 
@@ -179,7 +179,7 @@ export const posts = mysqlTable("posts", {
     title: varchar("title", { length: 255 }).notNull(),
     communityId: varchar("community_id", { length: 255 }).notNull(),
     studySessionId: varchar("study_session_id", { length: 255 }),
-    likes: int("likes"),
+    likes: int("likes").default(0).notNull(),
     datePosted: datetime("date_posted").notNull(),
     message: longtext("message"),
     videoUrls: text("video_urls"),
@@ -223,7 +223,7 @@ export const comments = mysqlTable("comments", {
     postId: varchar("post_id", { length: 255 }).notNull(),
     datePosted: datetime("date_posted").notNull(),
     message: varchar("message", { length: 255 }).notNull(),
-    likes: int("likes"),
+    likes: int("likes").default(0).notNull(),
 },
     (table) => {
         return {
@@ -262,7 +262,7 @@ export const replies = mysqlTable("replies", {
     commentId: varchar("comment_id", { length: 255 }).notNull(),
     datePosted: datetime("date_posted").notNull(),
     message: varchar("message", { length: 255 }).notNull(),
-    likes: int("likes"),
+    likes: int("likes").default(0).notNull(),
 },
     (table) => {
         return {

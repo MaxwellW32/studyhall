@@ -6,8 +6,8 @@ import { getAllCommunities } from "@/utility/serverFunctions/handleCommunities";
 import { community } from "@/types";
 import Community from "@/components/community/Community";
 import { useRouter } from 'next/navigation'
-import deleteAll from "@/utility/serverFunctions/handleAll";
 import getNiceUrl from "@/utility/useful/getNiceUrl";
+import toast from 'react-hot-toast';
 
 export default function App() {
   const router = useRouter()
@@ -23,7 +23,11 @@ export default function App() {
 
   if (isLoading) return <div>Loading...</div>
 
-  if (error) return <div>{error.message}</div>
+  if (error) {
+    toast.error(error.message)
+
+  return <div>{error.message}</div>
+}
 
   if (!communities) return <div>No Communities</div>
 
@@ -34,6 +38,7 @@ export default function App() {
       <button onClick={()=>router.push("/newCommunity")}>
         Add a community
         </button>
+  
 
       <div style={{ display: "grid", gap: "1rem" }}>
         {communities?.map((eachCommunity: community) => {

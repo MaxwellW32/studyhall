@@ -22,7 +22,6 @@ export default function DisplayAllPosts({ posts, inPreviewMode }: { posts: post[
                     <div key={eachPost.id} onClick={(e) => {
                         e.stopPropagation()
                         router.push(getNiceUrl("post", eachPost.id, eachPost.title))
-                        console.log(`$ran this click`);
                     }}>
                         <Post seenPost={eachPost} inPreviewMode={inPreviewMode} />
                     </div>

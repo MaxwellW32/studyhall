@@ -1,7 +1,6 @@
 /* Display all posts */
 .DisplayAllPostsMainDiv {
-    background-color: hsl(180, 100%, 74%);
-    padding: 1rem;
+    padding: 0rem 1rem 1rem 0rem;
     display: grid;
     gap: 1rem;
 }
@@ -19,7 +18,7 @@
 
 /* posts */
 .postMainDiv {
-    background-color: hsl(180, 100%, 60%);
+    background-color: #666;
     padding: 1rem;
     display: grid;
 }
