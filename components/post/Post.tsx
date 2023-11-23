@@ -11,6 +11,7 @@ import MakeComment from '../comment/MakeComment'
 import { getPostComments } from '@/utility/serverFunctions/handleComments'
 import Link from 'next/link'
 import { likePost } from '@/utility/serverFunctions/handlePosts'
+import getNiceUsername from '@/utility/useful/getNiceUsername'
 
 export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPreviewMode?: boolean }) {
 
@@ -46,12 +47,13 @@ export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPr
 
             {inPreviewMode ? (
                 <>
-                    <p>u/{seenPost.author && <span>{seenPost.author.name}<span style={{ color: "grey" }}>({seenPost.author.username})</span></span>}</p>
+                    {getNiceUsername("u/", seenPost.author?.name, seenPost.author?.username)}
 
                     <div style={{ display: "flex", gap: ".5rem", alignItems: 'center' }}>
-                        {seenPost.likes && <p>{seenPost.likes}</p>}
+                        {seenPost.likes && <p style={{ marginRight: "-.2rem" }}>{seenPost.likes}</p>}
 
-                        <svg onClick={(e) => { e.stopPropagation(); likePost(seenPost.id) }} style={{ fill: seenPost.likes ? "var(--highlightedColor)" : "" }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z" /></svg>
+                        <svg onClick={(e) => { e.stopPropagation(); likePost(seenPost.id) }} style={{ fill: seenPost.likes ? "var(--highlightedColor)" : "" }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z" />
+                        </svg>
 
                         <h3>{seenPost.title}</h3>
                     </div>
@@ -61,38 +63,55 @@ export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPr
                 </>
             ) : (
                 <>
-                    <p>Title: {seenPost.title}</p>
-                    <p>Posted by: {seenPost.author && <span>{seenPost.author.name}<span style={{ color: "blue" }}>({seenPost.author.username})</span></span>}</p>
-                    <p>post id {seenPost.id}</p>
-                    <p>message: {seenPost.message}</p>
-                    <p>posted: <Moment fromNow>{seenPost.datePosted}</Moment></p>
-                    <p>likes {seenPost.likes}</p>
+                    <div style={{ display: "flex", gap: "1rem" }}>
+                        {getNiceUsername("u/", seenPost.author?.name, seenPost.author?.username)}
+                        <p className='timeText'><Moment fromNow>{seenPost.datePosted}</Moment></p>
+                    </div>
 
-                    <p>images</p>
+                    <div style={{ display: "flex", gap: ".5rem", alignItems: 'center' }}>
+                        {seenPost.likes && <p style={{ marginRight: "-.2rem" }}>{seenPost.likes}</p>}
+
+                        <svg onClick={(e) => { e.stopPropagation(); likePost(seenPost.id) }} style={{ fill: seenPost.likes ? "var(--highlightedColor)" : "" }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z" />
+                        </svg>
+
+                        <h3>{seenPost.title}</h3>
+                    </div>
+
+                    <p>{seenPost.message}</p>
+
                     {usableImageUrls &&
-                        <div className={styles.imgCont} style={{ height: inPreviewMode ? "50px" : "400px" }}>
-                            {usableImageUrls.map((eachUrl, eachUrlIndex) => {
-                                return (
-                                    <DisplayImage key={eachUrlIndex} imageID={eachUrl} />
-                                )
-                            })}
-                        </div>
+                        <>
+                            <p>images</p>
+
+                            <div className={styles.imgCont} style={{ height: inPreviewMode ? "50px" : "400px" }}>
+                                {usableImageUrls.map((eachUrl, eachUrlIndex) => {
+                                    return (
+                                        <DisplayImage key={eachUrlIndex} imageID={eachUrl} />
+                                    )
+                                })}
+                            </div>
+                        </>
+
                     }
 
 
-                    <p>videos</p>
-                    {usableVideoUrls && <div className={styles.ytVideoCont} style={{ height: inPreviewMode ? "100px" : "auto" }}>
-                        {usableVideoUrls.map((eachUrl, eachUrlIndex) => {
-                            return (
-                                <DisplayYTVideo key={eachUrlIndex} videoId={eachUrl} />
-                            )
-                        })}
-                    </div>
+                    {usableVideoUrls &&
+                        <>
+                            <p>videos</p>
+
+                            <div className={styles.ytVideoCont} style={{ height: inPreviewMode ? "100px" : "auto" }}>
+                                {usableVideoUrls.map((eachUrl, eachUrlIndex) => {
+                                    return (
+                                        <DisplayYTVideo key={eachUrlIndex} videoId={eachUrl} />
+                                    )
+                                })}
+                            </div>
+                        </>
                     }
 
                     <MakeComment seenPostId={seenPost.id} />
 
-                    {seenPost.comments && (
+                    {seenPost.comments && seenPost.comments.length > 0 && (
                         <>
                             <DisplayAllComments comments={seenPost.comments} />
                             <button onClick={() => commentOffsetSet(prev => prev + 5)}>Show More Comments</button>

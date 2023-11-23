@@ -11,6 +11,8 @@ import { deleteCommunity } from "@/utility/serverFunctions/handleCommunities";
 import { getTopPosts } from '@/utility/serverFunctions/handlePosts'
 import { useInView } from 'react-intersection-observer'
 import Link from 'next/link'
+import getNiceUsername from '@/utility/useful/getNiceUsername'
+import { useSession } from 'next-auth/react';
 
 export default function Community({ seenCommunity, inPreviewMode }: { seenCommunity: community, inPreviewMode?: boolean }) {
   const queryClient = useQueryClient()
@@ -37,25 +39,33 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
     }
   })
 
+  const { data: session } = useSession()
+
   return (
-    <div className={styles.communityMainDiv} style={{ minHeight: inPreviewMode ? "auto" : "100vh", borderRadius: inPreviewMode ? "2rem" : "0px" }}>
+    <div className={styles.communityMainDiv} style={{ minHeight: inPreviewMode ? "auto" : "100vh", borderRadius: inPreviewMode ? "2rem" : "0px", display: "grid" }}>
       {inPreviewMode ? (
         <>
           <div style={{ display: "grid", gap: "1rem" }}>
-            <p>sh/{seenCommunity.name}</p>
+            <p><span style={{ fontStyle: "italic" }}>sh/</span>{seenCommunity.name}</p>
 
             {seenCommunity.posts && <DisplayAllPosts posts={seenCommunity.posts} inPreviewMode={inPreviewMode} />}
           </div>
         </>
       ) : (
         <>
-          <div>
-            {/* community header options */}
-            <Link href={`/newCommunity/edit/${seenCommunity.id}`}>Update community</Link>
-            <Link href={`/newCommunity/edit/${seenCommunity.id}`}>Delete community</Link>
-          </div>
-          <p>Hey there welcome to {seenCommunity.name}</p>
-          <p>Description: {seenCommunity.description}</p>
+          {seenCommunity.userId === session?.user.id && <div style={{ justifySelf: 'flex-end', display: "flex", gap: "1rem" }}>
+            <Link href={`/newCommunity/edit/${seenCommunity.id}`}>
+              <button>Update community</button>
+            </Link>
+
+            <Link href={`/newCommunity/edit/${seenCommunity.id}`}>
+              <button>Delete community</button>
+            </Link>
+          </div>}
+
+          <h3>Welcome to {seenCommunity.name}</h3>
+
+          <p style={{ maxWidth: "700px", marginBottom: "1rem" }}>{seenCommunity.description}</p>
 
 
           {postQueryEnabled ? (

@@ -44,14 +44,13 @@ export default function MakeComment({ seenPostId }: { seenPostId: string }) {
         <div>
             {seenErrors}
 
-            <label htmlFor='commentMessage'>Add Comment</label>
             <input id='commentMessage' type='text' value={commentObj.message} onChange={(e) => commentObjSet(prevObj => {
                 const newObj = { ...prevObj }
                 newObj.message = e.target.value
                 return newObj
             })} placeholder='Enter a comment' />
 
-            <button onClick={handleSubmit}>send comment</button>
+            <button onClick={handleSubmit}>Add comment</button>
         </div>
     )
 }

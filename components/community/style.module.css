@@ -1,4 +1,6 @@
 .communityMainDiv {
     background-color: #555;
     padding: 1rem;
+    border-top-left-radius: 0rem !important;
+    border-top-right-radius: 0rem !important;
 }

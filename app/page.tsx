@@ -32,10 +32,9 @@ export default function App() {
   if (!communities) return <div>No Communities</div>
 
   return (
-    <main>
-      <h1>Study Hall</h1>
+    <main style={{padding: "0rem 1rem 5rem 1rem", display: "grid"}}>
 
-      <button onClick={()=>router.push("/newCommunity")}>
+      <button style={{justifySelf: "flex-end", margin: "1rem"}} onClick={()=>router.push("/newCommunity")}>
         Add a community
         </button>
   
