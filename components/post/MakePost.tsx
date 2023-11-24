@@ -82,7 +82,7 @@ export default function MakePost({ passedCommunity, passedStudySession }: { pass
     }
 
     return (
-        <div style={{ display: "grid", padding: "1rem", backgroundColor: "#333" }}>
+        <div style={{ display: "grid", padding: "1rem 1rem 5rem 1rem", backgroundColor: "#333" }}>
             {creatingPost ? <h3>Add to {passedCommunity?.name ?? "Community"}</h3> : <h3>Want to add a post?</h3>}
             {seenErrors}
 

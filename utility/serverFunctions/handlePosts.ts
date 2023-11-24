@@ -12,9 +12,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sql } from 'drizzle-orm'
 
-export async function getTopPosts(communityId: string, seenLimit: number, seenOffset: number) {
+export async function getTopPosts(communityId: string, seenLimit: number, seenOffset: number): Promise<post[]> {
 
-    const results = await usableDb.query.posts.findMany({
+    const results = usableDb.query.posts.findMany({
         where: eq(posts.communityId, communityId),
         orderBy: [desc(posts.likes)],
         limit: seenLimit,
@@ -23,7 +23,10 @@ export async function getTopPosts(communityId: string, seenLimit: number, seenOf
             author: true,
             comments: {
                 orderBy: [desc(comments.likes)],
-                limit: 2
+                limit: 2,
+                with: {
+                    fromUser: true,
+                }
             }
         }
     });
@@ -106,7 +109,6 @@ export async function likePost(postId: string) {
 
     revalidatePath("/")
 }
-
 
 export async function updatePost(seenPost: post) {
 

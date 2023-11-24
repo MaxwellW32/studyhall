@@ -4,6 +4,7 @@ import React, { Fragment, useEffect, useState } from 'react'
 import styles from "./style.module.css"
 import MakePost from '../post/MakePost'
 import {
+  useInfiniteQuery,
   useMutation, useQuery, useQueryClient,
 } from "@tanstack/react-query"
 import DisplayAllPosts from '../post/DisplayAllPosts'
@@ -11,7 +12,6 @@ import { deleteCommunity } from "@/utility/serverFunctions/handleCommunities";
 import { getTopPosts } from '@/utility/serverFunctions/handlePosts'
 import { useInView } from 'react-intersection-observer'
 import Link from 'next/link'
-import getNiceUsername from '@/utility/useful/getNiceUsername'
 import { useSession } from 'next-auth/react';
 import getNiceUrl from '@/utility/useful/getNiceUrl'
 
@@ -19,17 +19,36 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
   const queryClient = useQueryClient()
   const { ref, inView } = useInView()
 
-  const [postQueryEnabled, postQueryEnabledSet] = useState(false)
+  const [postLimit] = useState(2)
 
-  const [postLimit, postLimitSet] = useState(seenCommunity.posts?.length ?? 1)
-  const [postOffset, postOffsetSet] = useState(0)
+  const [canStartFetchingPosts, canStartFetchingPostsSet] = useState(false)
 
-  const { data: posts, isLoading, error } = useQuery({
-    enabled: postQueryEnabled,
-    queryKey: ["seenPosts", postLimit, postOffset],
-    queryFn: async () => await getTopPosts(seenCommunity.id, postLimit, postOffset),
+  const searchPosts = async ({ pageParam }: { pageParam: number }) => {
+    //param is the post offset
+    const seenPosts = await getTopPosts(seenCommunity.id, postLimit, pageParam)
+
+    return { numCount: pageParam, seenPosts: seenPosts }
+  }
+
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status,
+  } = useInfiniteQuery({
+    queryKey: ['seenPosts'],
+    // initialData: {numCount: 0, seenPosts: seenCommunity.posts},
+    initialPageParam: 0,//offset start
+    queryFn: searchPosts,
+    getNextPageParam: (prevData, allPages) => {
+      return prevData.numCount + postLimit
+    },
     refetchOnWindowFocus: false
   })
+
 
   const { mutate: deleteCommunityMutation } = useMutation({
     mutationFn: deleteCommunity,
@@ -42,19 +61,25 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
 
   const { data: session } = useSession()
 
+  useEffect(() => {
+    const moreRecordsSeen = data && data.pages[data.pages.length - 1].seenPosts.length > 0
+    if (inView && moreRecordsSeen) {
+      fetchNextPage()
+
+    }
+  }, [inView])
+
   return (
     <div className={styles.communityMainDiv} style={{ minHeight: inPreviewMode ? "auto" : "100vh", borderRadius: inPreviewMode ? "2rem" : "0px", display: "grid" }}>
       {inPreviewMode ? (
-        <>
-          <div style={{ display: "grid", gap: "1rem" }}>
+        <div style={{ display: "grid", gap: "1rem", padding: "1rem" }}>
 
-            <Link className='showUnderline' style={{ display: "inline", justifySelf: "flex-start" }} href={getNiceUrl("community", seenCommunity.id, seenCommunity.name)}>
-              sh/{seenCommunity.name}
-            </Link>
+          <Link className='showUnderline' style={{ display: "inline", justifySelf: "flex-start" }} href={getNiceUrl("community", seenCommunity.id, seenCommunity.name)}>
+            sh/{seenCommunity.name}
+          </Link>
 
-            {seenCommunity.posts && <DisplayAllPosts posts={seenCommunity.posts} inPreviewMode={inPreviewMode} />}
-          </div>
-        </>
+          {seenCommunity.posts && <DisplayAllPosts normalPostArr={seenCommunity.posts} />}
+        </div>
       ) : (
         <>
           <div style={{ backgroundColor: "#888", padding: "1rem", display: "grid", marginBottom: "2rem" }}>
@@ -73,24 +98,16 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
             </div>}
           </div>
 
-          {postQueryEnabled ? (
-            <>
-              {posts && <DisplayAllPosts posts={posts} />}
-            </>
-          ) : (
-            <>
-              {seenCommunity.posts && <DisplayAllPosts posts={seenCommunity.posts} />}
-            </>
-          )}
+          {data?.pages && <DisplayAllPosts seenObjArr={data.pages} />}
 
           <MakePost passedCommunity={seenCommunity} passedStudySession={null} />
 
-          <button style={{ marginTop: "3rem" }} onClick={() => {
-            postQueryEnabledSet(true)
-            postLimitSet(prev => prev + 2)
-          }}>More Posts</button>
+          {/* //hidden button to reload */}
+          <div style={{ translate: "0px -400px", opacity: 0, userSelect: "none", pointerEvents: "none" }} ref={ref}></div>
+          {data?.pages[data.pages.length - 1].seenPosts.length == 0 && <h3 style={{ textAlign: "center", padding: "1rem" }}>Time to add more posts 😅</h3>}
         </>
       )}
     </div>
   )
 }
+

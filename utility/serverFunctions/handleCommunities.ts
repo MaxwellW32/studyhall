@@ -35,22 +35,22 @@ export async function getSpecificCommunity(seenCommunityID: string) {
 
     const result = await usableDb.query.communities.findFirst({
         where: eq(communities.id, seenCommunityID),
-        with: {
-            posts: {
-                orderBy: [desc(posts.likes)],
-                limit: 2,
-                with: {
-                    author: true,
-                    comments: {
-                        orderBy: [desc(comments.likes)],
-                        limit: 2,
-                        with: {
-                            fromUser: true
-                        }
-                    }
-                }
-            }
-        }
+        // with: {
+        //     posts: {
+        //         orderBy: [desc(posts.likes)],
+        //         limit: 2,
+        //         with: {
+        //             author: true,
+        //             comments: {
+        //                 orderBy: [desc(comments.likes)],
+        //                 limit: 2,
+        //                 with: {
+        //                     fromUser: true
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
     });
 
     return result

@@ -32,7 +32,7 @@ export default function NavBar({ seenUser }: { seenUser?: user }) {
                                 <ul style={{ position: "absolute", backgroundColor: "#333", width: "20vw", right: "-1rem", padding: "1rem", display: "grid", gap: "1rem" }} onClick={() => showingMoreSet(false)}>
                                     <button onClick={() => { signOut() }}>Sign Out</button>
 
-                                    <Link href={`user/${seenUser.id}`}>Profile</Link>
+                                    <Link href={`/user/${seenUser.id}`}>Profile</Link>
                                 </ul>
                             }
                         </div>
