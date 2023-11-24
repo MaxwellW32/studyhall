@@ -19,36 +19,51 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
   const queryClient = useQueryClient()
   const { ref, inView } = useInView()
 
-  const [postLimit] = useState(2)
-
-  const [canStartFetchingPosts, canStartFetchingPostsSet] = useState(false)
+  const [postLimit] = useState(50)
 
   const searchPosts = async ({ pageParam }: { pageParam: number }) => {
+    console.log(`$called with`, pageParam);
     //param is the post offset
     const seenPosts = await getTopPosts(seenCommunity.id, postLimit, pageParam)
 
-    return { numCount: pageParam, seenPosts: seenPosts }
+    return seenPosts
   }
 
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
-    queryKey: ['seenPosts'],
-    // initialData: {numCount: 0, seenPosts: seenCommunity.posts},
-    initialPageParam: 0,//offset start
+  const { data, error, fetchNextPage, hasNextPage, } = useInfiniteQuery({
+    queryKey: ['posts'],
+    initialData: () => {
+      if (seenCommunity.posts) {
+        return {
+          pageParams: [seenCommunity.posts.length],
+          pages: [seenCommunity.posts]
+        }
+      }
+    },
+    initialPageParam: seenCommunity.posts?.length ?? 0,//offset start
     queryFn: searchPosts,
     getNextPageParam: (prevData, allPages) => {
-      return prevData.numCount + postLimit
+      let postCount = 0
+
+      allPages.forEach(eachPostArr => {
+        eachPostArr.forEach(eachPost => {
+          if (eachPost.id) {
+            postCount++
+          }
+        })
+      })
+
+      if (prevData.length == 0) {
+        return undefined
+      }
+
+      console.log(`$end LINE`);
+      return postCount + (postLimit - 1)
     },
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    staleTime: 5000
   })
 
+  console.log(`$data`, data);
 
   const { mutate: deleteCommunityMutation } = useMutation({
     mutationFn: deleteCommunity,
@@ -62,12 +77,11 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
   const { data: session } = useSession()
 
   useEffect(() => {
-    const moreRecordsSeen = data && data.pages[data.pages.length - 1].seenPosts.length > 0
-    if (inView && moreRecordsSeen) {
+    if (hasNextPage && inView) {
+      console.log(`$called again`);
       fetchNextPage()
-
     }
-  }, [inView])
+  }, [inView, hasNextPage])
 
   return (
     <div className={styles.communityMainDiv} style={{ minHeight: inPreviewMode ? "auto" : "100vh", borderRadius: inPreviewMode ? "2rem" : "0px", display: "grid" }}>
@@ -98,13 +112,14 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
             </div>}
           </div>
 
-          {data?.pages && <DisplayAllPosts seenObjArr={data.pages} />}
+          {data?.pages && <DisplayAllPosts pagesArr={data.pages} />}
 
           <MakePost passedCommunity={seenCommunity} passedStudySession={null} />
 
           {/* //hidden button to reload */}
           <div style={{ translate: "0px -400px", opacity: 0, userSelect: "none", pointerEvents: "none" }} ref={ref}></div>
-          {data?.pages[data.pages.length - 1].seenPosts.length == 0 && <h3 style={{ textAlign: "center", padding: "1rem" }}>Time to add more posts 😅</h3>}
+
+          {!hasNextPage && <h3 style={{ textAlign: "center", padding: "1rem" }}>Time to add more posts 😅</h3>}
         </>
       )}
     </div>
