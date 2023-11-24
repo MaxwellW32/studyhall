@@ -12,16 +12,17 @@ import { likeComment } from '@/utility/serverFunctions/handleComments'
 
 export default function Comment({ seenComment }: { seenComment: comment }) {
 
-    const [replyLimit, replyLimitSet] = useState(1)
+    const [replyLimiter, replyLimitSet] = useState(1)//initial is 1, 15 increment
 
     const { data: replies, isLoading, error } = useQuery<reply[]>({
-        queryKey: ["seenReplies", seenComment.id, replyLimit],
-        queryFn: async () => await getCommentReplies(seenComment.id, replyLimit),
+        queryKey: ["replies", seenComment.id, replyLimiter],
+        initialData: seenComment.replies,
+        enabled: seenComment.replies ? false : true,
+        queryFn: async () => await getCommentReplies(seenComment.id, replyLimiter),
         refetchOnWindowFocus: false
     })
 
-    if (error) return <p>Couldn&apos;t fetch replies</p>
-
+    console.log(`$replies`, replies);
     return (
         <div style={{ display: "grid", gap: ".5rem", gridTemplateColumns: "auto 1fr", alignItems: "flex-start", backgroundColor: "#444", padding: '1rem', borderRadius: "1rem" }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", gap: ".3rem" }}>
@@ -42,6 +43,10 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
                 <MakeReply seenCommentId={seenComment.id} replyingToUserId={seenComment.userId} />
 
                 {replies && <DisplayAllReplies replies={replies} />}
+
+                {replies && replies.length >= replyLimiter &&
+                    <p onClick={() => { replyLimitSet(prevLimit => prevLimit + 5) }} className='wordLink'>more replies</p>
+                }
             </div>
         </div>
     )

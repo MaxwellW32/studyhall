@@ -10,8 +10,6 @@ export default function DisplayAllReplies({ replies }: { replies: reply[] }) {
                     <Reply key={eachReply.id} seenReply={eachReply} />
                 )
             })}
-
-            <p className='wordLink'>more replies</p>
         </div>
     )
 }

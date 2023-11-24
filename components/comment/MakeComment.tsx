@@ -17,7 +17,7 @@ export default function MakeComment({ seenPostId }: { seenPostId: string }) {
     const { mutate: addCommentMutation } = useMutation({
         mutationFn: addComment,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["seenComments"] })
+            queryClient.invalidateQueries({ queryKey: ["comments", seenPostId] })
         },
         onError: (err: Error | ZodError) => {
             seenErrInputSet(err)

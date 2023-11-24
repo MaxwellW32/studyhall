@@ -5,7 +5,7 @@ import styles from "./style.module.css"
 import DisplayYTVideo from '@/utility/useful/DisplayYTVideo'
 import DisplayImage from '@/utility/useful/DisplayImage'
 import Moment from 'react-moment';
-import { useQuery } from "@tanstack/react-query"
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import DisplayAllComments from '../comment/DisplayAllComments'
 import MakeComment from '../comment/MakeComment'
 import { getPostComments } from '@/utility/serverFunctions/handleComments'
@@ -13,24 +13,50 @@ import Link from 'next/link'
 import { likePost } from '@/utility/serverFunctions/handlePosts'
 import getNiceUsername from '@/utility/useful/getNiceUsername'
 import getNiceUrl from '@/utility/useful/getNiceUrl'
+import { toast } from 'react-hot-toast'
 
-export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPreviewMode?: boolean }) {
+export default function Post({ seenPost, inPreviewMode, calledFromTopLevel = false }: { seenPost: post, inPreviewMode?: boolean, calledFromTopLevel?: boolean }) {
 
-    const [commentOffset, commentOffsetSet] = useState(1)
+    const [commentLimit, commentLimitSet] = useState(15)
 
-    // const { data: comments, isLoading } = useQuery({
-    //     queryKey: ["seenComments", seenPost.id, commentOffset],
-    //     queryFn: async () => await getPostComments(seenPost.id, commentOffset),
-    //     refetchOnWindowFocus: false
-    // })
+    const searchComments = async ({ pageParam }: { pageParam: number }) => {
+        const seenComments = await getPostComments(seenPost.id, commentLimit, pageParam)
 
+        return seenComments
+    }
 
-    // const { data: community } = useQuery({
-    //     queryKey: ["seenCommunity"],
-    //     queryFn: async () => await getPostComments(seenPost.id, commentOffset),
-    //     refetchOnWindowFocus: false
-    // })
+    const { data: commentData, error: commentError, fetchNextPage, hasNextPage, } = useInfiniteQuery({
+        queryKey: ["comments", seenPost.id],
+        initialData: () => {
+            if (seenPost.comments) {
+                return {
+                    pageParams: [0],
+                    pages: [seenPost.comments]
+                }
+            }
+        },
+        enabled: calledFromTopLevel,
+        initialPageParam: seenPost.comments?.length ?? 0,//offset start
+        queryFn: searchComments,
+        getNextPageParam: (prevData, allPages) => {
+            let commentCount = 0
 
+            allPages.forEach(eachCommentArr => {
+                eachCommentArr.forEach(eachComment => {
+                    if (eachComment.id) {
+                        commentCount++
+                    }
+                })
+            })
+
+            if (prevData.length == 0) {
+                return undefined
+            }
+
+            return commentCount + (commentLimit - 1)
+        },
+        refetchOnWindowFocus: false,
+    })
 
     const usableVideoUrls = useMemo(() => {
         return seenPost.videoUrls ? JSON.parse(seenPost.videoUrls) as string[] : null
@@ -39,7 +65,6 @@ export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPr
     const usableImageUrls = useMemo(() => {
         return seenPost.imageUrls ? JSON.parse(seenPost.imageUrls) as string[] : null
     }, [seenPost.videoUrls])
-
 
     return (
         <div className={styles.postMainDiv}>
@@ -92,9 +117,7 @@ export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPr
                                 })}
                             </div>
                         </>
-
                     }
-
 
                     {usableVideoUrls &&
                         <>
@@ -112,12 +135,14 @@ export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPr
 
                     <MakeComment seenPostId={seenPost.id} />
 
-                    {seenPost.comments && seenPost.comments.length > 0 && (
-                        <DisplayAllComments comments={seenPost.comments} />
+                    {commentData?.pages && (
+                        <DisplayAllComments commentPages={commentData.pages} />
                     )}
 
+                    {commentError && toast.error(commentError.message)}
                 </>)}
 
+            {hasNextPage && commentData && commentData.pages[commentData.pages.length - 1].length === commentLimit && <p onClick={() => { fetchNextPage() }} style={{ fontStyle: 'italic' }}>More Comments</p>}
         </div>
     )
 }

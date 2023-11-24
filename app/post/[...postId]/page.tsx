@@ -12,6 +12,6 @@ export default async function CommunityPageLoader({ params }: { params: { postId
 
 
     return (
-        <Post seenPost={foundPost} />
+        <Post seenPost={foundPost} calledFromTopLevel={true} />
     )
 }

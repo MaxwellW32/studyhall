@@ -1,6 +1,6 @@
 "use server"
 
-import { comment, commentsSchema, newComment } from "@/types";
+import { comment, commentsSchema, newComment, user } from "@/types";
 import { comments, users, replies } from "@/db/schema"
 import { eq, desc } from "drizzle-orm";
 import { usableDb } from "@/db/index";
@@ -11,12 +11,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { sql } from 'drizzle-orm'
 
-export async function getPostComments(seenPostId: string, limitAmt: number) {
+export async function getPostComments(seenPostId: string, limitAmt: number, offsetAmt: number): Promise<comment[]> {
 
     const results = await usableDb.query.comments.findMany({
         where: eq(comments.postId, seenPostId),
         orderBy: [desc(comments.likes)],
         limit: limitAmt,
+        offset: offsetAmt,
         with: {
             fromUser: true
         }
@@ -44,7 +45,7 @@ export async function addComment(seenComment: newComment) {
     await usableDb.insert(comments).values(newComment);
 }
 
-export async function getCommentUser(commentUserId: string) {
+export async function getCommentUser(commentUserId: string): Promise<user> {
 
     const results = await usableDb.select()
         .from(users)
