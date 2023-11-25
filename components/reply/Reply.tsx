@@ -9,7 +9,7 @@ import getNiceUsername from '@/utility/useful/getNiceUsername'
 export default function Reply({ seenReply }: { seenReply: reply }) {
 
     return (
-        <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "flex-start", gap: "1rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "flex-start", gap: "1rem", backgroundColor: "#333", padding: "1rem", borderRadius: "1rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: ".3rem" }}>
                 {seenReply.likes > 0 && <p>{seenReply.likes}</p>}
 
@@ -18,12 +18,12 @@ export default function Reply({ seenReply }: { seenReply: reply }) {
             </div>
 
             <div>
-                <div style={{ display: "flex", gap: '1rem' }}>
-                    <p style={{ fontWeight: "bold" }}>replying to @{seenReply.replyingToUser?.username}</p>
-
+                <div style={{ display: "flex", gap: '1rem', alignItems: "center" }}>
                     {seenReply.fromUser ? <>{getNiceUsername("u/", seenReply.fromUser)}</> : <p>u/CommentUser</p>}
 
-                    <p>{<Moment fromNow>{seenReply.datePosted}</Moment>}</p>
+                    <p style={{ fontWeight: "bold" }}>replying to @{seenReply.replyingToUser?.username}</p>
+
+                    <p className='timeText'>{<Moment fromNow>{seenReply.datePosted}</Moment>}</p>
                 </div>
 
 

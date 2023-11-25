@@ -22,7 +22,14 @@ export async function getAllCommunities(seenLimit: number, seenOffset: number) {
                 orderBy: [desc(posts.likes)],
                 limit: 3,
                 with: {
-                    author: true
+                    author: true,
+                    comments: {
+                        orderBy: [desc(comments.likes)],
+                        limit: 1,
+                        with: {
+                            fromUser: true
+                        }
+                    }
                 }
             },
         }
@@ -43,7 +50,7 @@ export async function getSpecificCommunity(seenCommunityID: string) {
                     author: true,
                     comments: {
                         orderBy: [desc(comments.likes)],
-                        limit: 2,
+                        limit: 1,
                         with: {
                             fromUser: true
                         }

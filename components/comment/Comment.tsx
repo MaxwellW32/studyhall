@@ -33,7 +33,7 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
             </div>
 
             <div>
-                <div style={{ display: "flex", gap: "1rem" }}>
+                <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
                     {seenComment.fromUser ? <>{getNiceUsername("u/", seenComment.fromUser)}</> : <p>u/CommentUser</p>}
                     <p className='timeText'><Moment fromNow>{seenComment.datePosted}</Moment></p>
                 </div>
@@ -45,7 +45,7 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
                 {replies && <DisplayAllReplies replies={replies} />}
 
                 {replies && replies.length >= replyLimiter &&
-                    <p onClick={() => { replyLimitSet(prevLimit => prevLimit + 5) }} className='wordLink'>more replies</p>
+                    <p onClick={() => { replyLimitSet(prevLimit => prevLimit + 5) }} className='wordLink'>More Replies</p>
                 }
             </div>
         </div>

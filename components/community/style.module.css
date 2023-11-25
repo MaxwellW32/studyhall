@@ -2,6 +2,7 @@
     background-color: #555;
     border-top-left-radius: 0rem !important;
     border-top-right-radius: 0rem !important;
+    display: grid;
 }
 
 

@@ -10,8 +10,8 @@ export default async function CommunityPageLoader({ params }: { params: { postId
 
     if (!foundPost) return <p>Post Not Found</p>
 
-
+    console.log(`$called here`);
     return (
-        <Post seenPost={foundPost} calledFromTopLevel={true} />
+        <Post seenPost={foundPost} />
     )
 }

@@ -89,7 +89,7 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
             sh/{seenCommunity.name}
           </Link>
 
-          {seenCommunity.posts && <DisplayAllPosts normalPostArr={seenCommunity.posts} />}
+          {seenCommunity.posts && <DisplayAllPosts normalPostArr={seenCommunity.posts} inPreviewMode={inPreviewMode} />}
         </div>
       ) : (
         <>
@@ -125,7 +125,6 @@ export default function Community({ seenCommunity, inPreviewMode }: { seenCommun
           {postsData?.pages && <DisplayAllPosts pagesArr={postsData.pages} />}
 
           {postsError && toast.error(postsError.message)}
-
 
           <MakePost passedCommunity={seenCommunity} passedStudySession={null} />
 

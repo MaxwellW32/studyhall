@@ -15,9 +15,13 @@ import getNiceUsername from '@/utility/useful/getNiceUsername'
 import getNiceUrl from '@/utility/useful/getNiceUrl'
 import { toast } from 'react-hot-toast'
 
-export default function Post({ seenPost, inPreviewMode, calledFromTopLevel = false }: { seenPost: post, inPreviewMode?: boolean, calledFromTopLevel?: boolean }) {
+export default function Post({ seenPost, inPreviewMode }: { seenPost: post, inPreviewMode?: boolean }) {
 
     const [commentLimit, commentLimitSet] = useState(15)
+
+    const [canGetComments, canGetCommentsSet] = useState(false)
+
+    const [commentsHidden, commentsHiddenSet] = useState(false)
 
     const searchComments = async ({ pageParam }: { pageParam: number }) => {
         const seenComments = await getPostComments(seenPost.id, commentLimit, pageParam)
@@ -35,7 +39,6 @@ export default function Post({ seenPost, inPreviewMode, calledFromTopLevel = fal
                 }
             }
         },
-        enabled: calledFromTopLevel,
         initialPageParam: seenPost.comments?.length ?? 0,//offset start
         queryFn: searchComments,
         getNextPageParam: (prevData, allPages) => {
@@ -49,7 +52,7 @@ export default function Post({ seenPost, inPreviewMode, calledFromTopLevel = fal
                 })
             })
 
-            if (prevData.length == 0) {
+            if (commentCount < commentLimit) {
                 return undefined
             }
 
@@ -68,12 +71,14 @@ export default function Post({ seenPost, inPreviewMode, calledFromTopLevel = fal
 
     return (
         <div className={styles.postMainDiv}>
-
-            {seenPost.forCommunity && <Link href={`/community/${seenPost.forCommunity?.id}/${seenPost.forCommunity?.name.toLowerCase().replace(/ /g, '_')}`}>{seenPost.forCommunity?.name}</Link>}
+            {seenPost.forCommunity && <Link className='showUnderline' href={getNiceUrl("community", seenPost.forCommunity.id, seenPost.forCommunity.name)}>{seenPost.forCommunity.name}</Link>}
 
             {inPreviewMode ? (
                 <>
-                    {seenPost.author && <>{getNiceUsername("u/", seenPost.author)}</>}
+                    <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                        {seenPost.author && getNiceUsername("u/", seenPost.author)}
+                        <p className='timeText'><Moment fromNow>{seenPost.datePosted}</Moment></p>
+                    </div>
 
                     <div style={{ display: "flex", gap: ".5rem", alignItems: 'center' }}>
                         {seenPost.likes > 0 && <p style={{ marginRight: "-.2rem" }}>{seenPost.likes}</p>}
@@ -84,13 +89,18 @@ export default function Post({ seenPost, inPreviewMode, calledFromTopLevel = fal
                         <h3>{seenPost.title}</h3>
                     </div>
 
+
                     <p>{seenPost.message}</p>
+
+                    {seenPost.comments && (
+                        <DisplayAllComments comments={seenPost.comments} />
+                    )}
 
                 </>
             ) : (
                 <>
-                    <div style={{ display: "flex", gap: "1rem" }}>
-                        {seenPost.author && <>{getNiceUsername("u/", seenPost.author)}</>}
+                    <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                        {seenPost.author && getNiceUsername("u/", seenPost.author)}
                         <p className='timeText'><Moment fromNow>{seenPost.datePosted}</Moment></p>
                     </div>
 
@@ -135,14 +145,18 @@ export default function Post({ seenPost, inPreviewMode, calledFromTopLevel = fal
 
                     <MakeComment seenPostId={seenPost.id} />
 
-                    {commentData?.pages && (
+                    {commentData?.pages && !commentsHidden && (
                         <DisplayAllComments commentPages={commentData.pages} />
                     )}
 
                     {commentError && toast.error(commentError.message)}
-                </>)}
 
-            {hasNextPage && commentData && commentData.pages[commentData.pages.length - 1].length === commentLimit && <p onClick={() => { fetchNextPage() }} style={{ fontStyle: 'italic' }}>More Comments</p>}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+                        {hasNextPage && <p className='wordLink' onClick={(e) => { e.stopPropagation(); fetchNextPage(); commentsHiddenSet(false) }}>More Comments</p>}
+
+                        {!canGetComments && <p className='wordLink' onClick={(e) => { e.stopPropagation(); commentsHiddenSet(true) }}>Hide comments</p>}
+                    </div>
+                </>)}
         </div>
     )
 }

@@ -17,7 +17,7 @@ export default function MakeReply({ seenCommentId, replyingToUserId, fromReply }
     const { mutate: addReplyMutation } = useMutation({
         mutationFn: addReply,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["seenReplies"] })
+            queryClient.invalidateQueries({ queryKey: ["replies", seenCommentId] })
         },
         onError: (err: Error | ZodError) => {
             seenErrInputSet(err)
