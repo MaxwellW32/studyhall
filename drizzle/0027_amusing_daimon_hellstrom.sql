@@ -1,0 +1,1 @@
+CREATE INDEX `community_id_index` ON `users_to_communities` (`community_id`);

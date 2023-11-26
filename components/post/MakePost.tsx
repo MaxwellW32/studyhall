@@ -21,7 +21,7 @@ export default function MakePost({ passedCommunity, passedStudySession }: { pass
         mutationFn: addPost,
         onSuccess: () => {
             toast.success("Posted!")
-            queryClient.invalidateQueries({ queryKey: ["seenPosts"] })
+            queryClient.invalidateQueries({ queryKey: ['posts', passedCommunity!.id] })
         },
         onError: (err: Error | ZodError) => {
             seenErrInputSet(err)
@@ -82,7 +82,7 @@ export default function MakePost({ passedCommunity, passedStudySession }: { pass
     }
 
     return (
-        <div style={{ display: "grid", padding: "1rem 1rem 5rem 1rem", backgroundColor: "#333" }}>
+        <div style={{ display: "grid", marginBlock: "1rem", padding: "1rem 1rem 5rem 1rem", backgroundColor: "#333" }}>
             {creatingPost ? <h3>Add to {passedCommunity?.name ?? "Community"}</h3> : <h3>Want to add a post?</h3>}
             {seenErrors}
 
@@ -95,7 +95,7 @@ export default function MakePost({ passedCommunity, passedStudySession }: { pass
                             newPostObj.title = e.target.value
 
                             return newPostObj
-                        })} placeholder='Enter a title' />
+                        })} placeholder='Post Title' />
                     <label htmlFor='messagesIdentifier'>Message</label>
                 </>
             }

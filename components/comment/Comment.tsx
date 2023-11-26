@@ -4,11 +4,11 @@ import { comment, reply } from '@/types'
 import React, { useState } from 'react'
 import Moment from 'react-moment'
 import MakeReply from '../reply/MakeReply'
-import DisplayAllReplies from '../reply/DisplayAllReplies'
 import { useQuery } from "@tanstack/react-query"
 import { getCommentReplies } from '@/utility/serverFunctions/handleReplies'
 import getNiceUsername from '@/utility/useful/getNiceUsername'
 import { likeComment } from '@/utility/serverFunctions/handleComments'
+import Reply from '../reply/Reply'
 
 export default function Comment({ seenComment }: { seenComment: comment }) {
 
@@ -22,7 +22,6 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
         refetchOnWindowFocus: false
     })
 
-    console.log(`$replies`, replies);
     return (
         <div style={{ display: "grid", gap: ".5rem", gridTemplateColumns: "auto 1fr", alignItems: "flex-start", backgroundColor: "#444", padding: '1rem', borderRadius: "1rem" }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", gap: ".3rem" }}>
@@ -42,7 +41,15 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
 
                 <MakeReply seenCommentId={seenComment.id} replyingToUserId={seenComment.userId} />
 
-                {replies && <DisplayAllReplies replies={replies} />}
+                {replies && (
+                    <div style={{ borderRadius: "1rem", display: "grid", gap: "1rem" }}>
+                        {replies.map(eachReply => {
+                            return (
+                                <Reply key={eachReply.id} seenReply={eachReply} />
+                            )
+                        })}
+                    </div>
+                )}
 
                 {replies && replies.length >= replyLimiter &&
                     <p onClick={() => { replyLimitSet(prevLimit => prevLimit + 5) }} className='wordLink'>More Replies</p>

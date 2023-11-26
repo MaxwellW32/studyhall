@@ -54,6 +54,11 @@ svg {
     width: 1rem;
     fill: white;
     cursor: pointer;
+    transition: scale 400ms;
+}
+
+svg:hover {
+    scale: 1.2;
 }
 
 button {
@@ -128,6 +133,10 @@ input::placeholder {
 
 .noScrollBar::-webkit-scrollbar {
     display: none;
+}
+
+.showUnderline {
+    justify-self: flex-start;
 }
 
 .showUnderline:hover {

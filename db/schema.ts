@@ -115,7 +115,12 @@ export const communities = mysqlTable("communities", {
     memberCount: int("member_count").default(0).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description").notNull(),
-});
+},
+    (table) => {
+        return {
+            memberCountIdx: index("member_count_index").on(table.memberCount),
+        }
+    });
 
 export const communitiesRelations = relations(communities, ({ one, many }) => ({
     createdBy: one(users, {
@@ -189,6 +194,8 @@ export const posts = mysqlTable("posts", {
         return {
             communityIdIdx: index("community_id_index").on(table.communityId),
             studySessionIdIdx: index("study_session_id_index").on(table.studySessionId),
+            postLikesIdx: index("post_likes_index").on(table.likes),
+            postDatePostedIdx: index("post_date_posted_index").on(table.datePosted),
         }
     });
 
@@ -228,6 +235,7 @@ export const comments = mysqlTable("comments", {
     (table) => {
         return {
             commentsPostIdIdx: index("comments_post_id_index").on(table.postId),
+            commentLikesIdx: index("comment_likes_index").on(table.likes),
         }
     });
 
@@ -268,6 +276,7 @@ export const replies = mysqlTable("replies", {
         return {
             commentIdIdx: index("comment_id_idx").on(table.commentId),
             replyingToUserIdIdx: index("replying_To_user_id_index").on(table.replyingToUserId),
+            replyLikesIdx: index("reply_likes_index").on(table.likes),
         }
     });
 
@@ -324,7 +333,9 @@ export const usersToCommunities = mysqlTable('users_to_communities', {
 },
     (table) => {
         return {
-            pk: primaryKey({ columns: [table.userId, table.communityId] })
+            pk: primaryKey({ columns: [table.userId, table.communityId] }),
+            communityIdIdx: index("community_id_index").on(table.communityId),
+            userIdIdx: index("user_id_index").on(table.userId),
         }
     });
 

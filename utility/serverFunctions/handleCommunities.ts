@@ -1,14 +1,14 @@
 "use server"
 
 import { community, communitySchema, newCommunity } from "@/types";
-import { communities, posts, comments, replies } from "@/db/schema"
-import { eq, desc, asc } from "drizzle-orm";
+import { communities, posts, comments, replies, usersToCommunities } from "@/db/schema"
+import { eq, desc, asc, sql } from "drizzle-orm";
 import { usableDb } from "@/db";
 import { authOptions } from '@/lib/auth/auth-options'
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid"
 import { revalidatePath } from "next/cache";
-
+import { redirect } from "next/navigation";
 
 
 export async function getAllCommunities(seenLimit: number, seenOffset: number) {
@@ -27,7 +27,11 @@ export async function getAllCommunities(seenLimit: number, seenOffset: number) {
                         orderBy: [desc(comments.likes)],
                         limit: 1,
                         with: {
-                            fromUser: true
+                            fromUser: true,
+                            replies: {
+                                orderBy: [desc(replies.likes)],
+                                limit: 1,
+                            }
                         }
                     }
                 }
@@ -52,7 +56,11 @@ export async function getSpecificCommunity(seenCommunityID: string) {
                         orderBy: [desc(comments.likes)],
                         limit: 1,
                         with: {
-                            fromUser: true
+                            fromUser: true,
+                            replies: {
+                                orderBy: [desc(replies.likes)],
+                                limit: 1,
+                            }
                         }
                     }
                 }
@@ -64,7 +72,6 @@ export async function getSpecificCommunity(seenCommunityID: string) {
 }
 
 export async function addCommunity(seenCommunity: newCommunity) {
-
     const session = await getServerSession(authOptions)
     if (!session) throw new Error("No session")
 
@@ -90,14 +97,87 @@ export async function updateCommunity(seenCommunity: Omit<community, "memberCoun
             description: seenCommunity.description,
         })
         .where(eq(communities.id, seenCommunity.id));
-
-
-    revalidatePath("/")
 }
 
 export async function deleteCommunity(seenId: string) {
+    const session = await getServerSession(authOptions)
 
     communitySchema.pick({ id: true }).parse(seenId)
 
     await usableDb.delete(communities).where(eq(communities.id, seenId));
 }
+
+export async function joinCommunity(communityId: string) {
+
+    const session = await getServerSession(authOptions)
+    if (!session) redirect(`/api/auth/signIn`)
+
+    await usableDb.insert(usersToCommunities).values({
+        userId: session.user.id,
+        communityId: communityId,
+    });
+
+    await usableDb.update(communities)
+        .set({
+            memberCount: sql`${communities.memberCount} + 1`,
+        })
+        .where(eq(communities.id, communityId));
+
+
+    revalidatePath(`/community/${communityId}`)
+}
+
+
+export async function getCommunityMembers(communityId: string, seenLimit: number, seenOffset: number) {
+
+
+    const results = await usableDb.query.usersToCommunities.findMany({
+        limit: seenLimit,
+        offset: seenOffset,
+        where: eq(usersToCommunities.communityId, communityId),
+        with: {
+            user: {
+                columns: {
+                    id: true,
+                    username: true,
+                    image: true
+                }
+            }
+        }
+    });
+
+    return results
+}
+
+export async function getMemberCommunitiesForStorageObj(userId: string) {
+    //local storage function only to replenish client side comm array - rarely ran
+    console.log(`$called third`);
+    const results = await usableDb.query.usersToCommunities.findMany({
+        where: eq(usersToCommunities.userId, userId)
+    });
+
+    return results.map(eachResult => {
+        console.log(`$called in loop `, eachResult.communityId);
+        return eachResult.communityId
+    })
+}
+
+
+
+//good plan but doesnt work at scale
+// export async function isSubscribedToCommunity(communityId: string) {
+
+//     if (!session) return false
+
+//     const results = await usableDb.query.usersToCommunities.findMany({
+//         where: eq(usersToCommunities.communityId, communityId),
+//     });
+
+//     if (!results) return false
+
+//     results.forEach(eachUsersToCommunitiesObj => {
+//         if (eachUsersToCommunitiesObj.userId === session.user.id) return true
+//     });
+
+//     return false
+// }

@@ -1,36 +1,69 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
 import { getAllCommunities } from "@/utility/serverFunctions/handleCommunities";
 import { community } from "@/types";
 import Community from "@/components/community/Community";
 import { useRouter } from 'next/navigation'
 import getNiceUrl from "@/utility/useful/getNiceUrl";
 import toast from 'react-hot-toast';
+import { validateUserCommunitiesJoinedObj } from "@/utility/savestorage";
+import { useSession } from "next-auth/react";
+import { authOptions } from "@/lib/auth/auth-options";
 // import deleteAll from "@/utility/serverFunctions/handleAll";
 
 export default function App() {
   const router = useRouter()
+  const { data: session } = useSession()
 
-  const [communityOffset, communityOffsetSet] = useState(0)
-  const [communityLimit, communityLimitSet] = useState(50)
 
-  const { data: communities, isLoading, error } = useQuery({
-    queryKey: ["seenCommunities", communityLimit, communityOffset],
-    queryFn: async () => await getAllCommunities(communityLimit, communityOffset),
-    refetchOnWindowFocus: false
-  })
+  useEffect(() => {
+    if (session) {
+      validateUserCommunitiesJoinedObj(session.user.id)
+    }
 
-  if (isLoading) return <div>Loading...</div>
+  }, [])
+  const [communityLimit] = useState(50)
 
-  if (error) {
-    toast.error(error.message)
 
-    return <div>{error.message}</div>
+  const searchCommunities = async ({ pageParam }: { pageParam: number }) => {
+    const seenCommunities = await getAllCommunities(communityLimit, pageParam)
+
+    return seenCommunities
   }
 
-  if (!communities) return <div>No Communities</div>
+  const { data: communityData, error: communityError, isLoading: communityIsLoading, fetchNextPage, hasNextPage, } = useInfiniteQuery({
+    queryKey: ["seenCommunities"],
+    initialPageParam: 0,
+    queryFn: searchCommunities,
+    getNextPageParam: (prevData, allPages) => {
+      let communityCount = 0
+
+      allPages.forEach(eachCommunityArr => {
+        eachCommunityArr.forEach(eachCommunity => {
+          if (eachCommunity.id) {
+            communityCount++
+          }
+        })
+      })
+
+      if (communityCount < communityLimit) {
+        return undefined
+      }
+
+      return communityCount + (communityLimit - 1)
+    },
+    refetchOnWindowFocus: false,
+  })
+
+  if (communityIsLoading) return <div>Loading...</div>
+
+  if (communityError) {
+    toast.error(communityError.message)
+    return <div>{communityError.message}</div>
+  }
+
 
   return (
     <main style={{ padding: "0rem 1rem 5rem 1rem", display: "grid" }}>
@@ -38,16 +71,26 @@ export default function App() {
         Add a community
       </button>
 
+      {communityData?.pages &&
+        <div style={{ display: "grid", gap: "3rem" }}>
+          {communityData.pages.map(eachCommunityArr => {
 
-      <div style={{ display: "grid", gap: "1rem" }}>
-        {communities?.map((eachCommunity: community) => {
-          return (
-            <div key={eachCommunity.id} onClick={() => { router.push(getNiceUrl("community", eachCommunity.id, eachCommunity.name)) }}>
-              <Community seenCommunity={eachCommunity} inPreviewMode={true} />
-            </div>
-          )
-        })}
-      </div>
+            if (eachCommunityArr.length > 0) {
+              return eachCommunityArr.map(eachCommunity => {
+
+                return (
+                  <div key={eachCommunity.id} onClick={() => { router.push(getNiceUrl("community", eachCommunity.id, eachCommunity.name)) }}>
+                    <Community seenCommunity={eachCommunity} fullScreen={false} />
+                  </div>
+                )
+              })
+            }
+          })}
+        </div>
+      }
+
+
+      <button onClick={() => { fetchNextPage() }}>Get more</button>
     </main>
   )
 }

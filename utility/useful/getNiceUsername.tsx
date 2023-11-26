@@ -5,7 +5,7 @@ import getNiceUrl from "./getNiceUrl";
 import Image from "next/image";
 import { defaultImage } from "../globalState";
 
-export default function getNiceUsername(initialText: string, userInfo: user) {
+export default function getNiceUsername(initialText: string, userInfo: Pick<user, "id" | "image" | "username"> & { name?: string | null }) {
     return (
         <Link style={{ display: "flex", alignItems: "center" }} onClick={(e) => e.stopPropagation()} href={getNiceUrl("user", userInfo.id, userInfo.name ?? "")}>
 
