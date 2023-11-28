@@ -68,10 +68,7 @@ export type user = z.infer<typeof userSchema> & {
     replies?: reply[]
 }
 
-
-
-
-
+export type updateUserType = Pick<user, "name" | "username" | "image">
 
 
 

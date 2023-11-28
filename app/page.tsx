@@ -28,13 +28,14 @@ export default function App() {
 
 
   const searchCommunities = async ({ pageParam }: { pageParam: number }) => {
+    console.log(`$pageParam`, pageParam);
     const seenCommunities = await getAllCommunities(communityLimit, pageParam)
 
     return seenCommunities
   }
 
   const { data: communityData, error: communityError, isLoading: communityIsLoading, fetchNextPage, hasNextPage, } = useInfiniteQuery({
-    queryKey: ["seenCommunities"],
+    queryKey: ["communities"],
     initialPageParam: 0,
     queryFn: searchCommunities,
     getNextPageParam: (prevData, allPages) => {

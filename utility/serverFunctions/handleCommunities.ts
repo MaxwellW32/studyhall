@@ -99,12 +99,14 @@ export async function updateCommunity(seenCommunity: Omit<community, "memberCoun
         .where(eq(communities.id, seenCommunity.id));
 }
 
-export async function deleteCommunity(seenId: string) {
+export async function deleteCommunity(seenCommunity: Pick<community, "id">) {
     const session = await getServerSession(authOptions)
 
-    communitySchema.pick({ id: true }).parse(seenId)
+    communitySchema.pick({ id: true }).parse(seenCommunity)
 
-    await usableDb.delete(communities).where(eq(communities.id, seenId));
+    await usableDb.delete(communities).where(eq(communities.id, seenCommunity.id));
+
+    redirect("/")
 }
 
 export async function joinCommunity(communityId: string) {

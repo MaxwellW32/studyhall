@@ -54,21 +54,16 @@ export function isAMemberOfCommunity(communityId: string, userId: string) {
 
 export async function validateUserCommunitiesJoinedObj(userId: string) {
     //this only runs if obj is not there in storage
-    console.log(`$called first`);
 
     //read first
     const seenUserCommunitiesJoined: userCommunitiesJoined = retreiveFromLocalStorage("userCommunitiesJoined")
-    console.log(`$seenUserCommunitiesJoined`, seenUserCommunitiesJoined);
 
     if (!seenUserCommunitiesJoined) {
-        console.log(`$called second`);
         const newUserCommObj: userCommunitiesJoined = {}
 
         newUserCommObj[userId] = await getMemberCommunitiesForStorageObj(userId)
-        console.log(`$newUserCommObj`, newUserCommObj);
 
         saveToLocalStorage("userCommunitiesJoined", newUserCommObj)
-        console.log(`$called 4th`);
     }
 
 }

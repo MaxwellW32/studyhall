@@ -1,11 +1,12 @@
 "use server"
 
-import { user, userSchema } from "@/types";
+import { updateUserType, user, userSchema } from "@/types";
 import { users } from "@/db/schema"
 import { drizzle } from "drizzle-orm/planetscale-serverless"
 import { eq } from "drizzle-orm";
 import { usableDb } from "@/db";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth/auth-options";
 
 
 export async function getAllUsers() {
@@ -47,13 +48,21 @@ export async function getPostUser(postUserId: string) {
     return results[0]
 }
 
-export async function updateUser(seenUser: user) {
+export async function updateUser(seenUser: updateUserType) {
 
-    userSchema.parse(seenUser)
+    userSchema.pick({ name: true, username: true, image: true }).parse(seenUser)
+
+    const session = await getServerSession(authOptions)
+    if (!session) throw new Error("No session")
 
     await usableDb.update(users)
-        .set(seenUser)
-        .where(eq(users.id, seenUser.id));
+        .set({
+            name: seenUser.name,
+            username: seenUser.username,
+            image: seenUser.image,
+            updatedAt: new Date
+        })
+        .where(eq(users.id, session.user.id));
 }
 
 export async function deleteUser(seenId: string) {
@@ -61,4 +70,24 @@ export async function deleteUser(seenId: string) {
     userSchema.pick({ id: true }).parse(seenId)
 
     await usableDb.delete(users).where(eq(users.id, seenId));
+}
+
+export async function getUserCommunities(seenId: string) {
+
+    userSchema.pick({ id: true }).parse(seenId)
+
+    await usableDb.delete(users).where(eq(users.id, seenId));
+}
+
+export async function checUsernameIsAvailable(seenUserName: Pick<user, "username">) {
+
+    userSchema.pick({ username: true }).parse(seenUserName)
+
+    const result = await usableDb.query.users.findFirst({
+        where: eq(users.username, seenUserName.username),
+    });
+
+    if (result !== undefined) return false
+
+    return true
 }
