@@ -21,7 +21,7 @@ export default function Reply({ seenReply }: { seenReply: reply }) {
                 <div style={{ display: "flex", gap: '1rem', alignItems: "center" }}>
                     {seenReply.fromUser ? <>{getNiceUsername("u/", seenReply.fromUser)}</> : <p>u/CommentUser</p>}
 
-                    <p style={{ fontWeight: "bold" }}>replying to @{seenReply.replyingToUser?.username}</p>
+                    <p style={{ fontWeight: "bold" }}>replying to @{seenReply?.replyingTo}</p>
 
                     <p className='timeText'>{<Moment fromNow>{seenReply.datePosted}</Moment>}</p>
                 </div>
@@ -29,7 +29,7 @@ export default function Reply({ seenReply }: { seenReply: reply }) {
 
                 <p>message: {seenReply.message}</p>
 
-                {seenReply.fromUser?.id && <MakeReply fromReply={true} seenCommentId={seenReply.commentId} replyingToUserId={seenReply.fromUser.id} />}
+                {seenReply.fromUser?.id && <MakeReply fromReply={true} seenCommentId={seenReply.commentId} replyingTo={seenReply.fromUser.id} />}
             </div>
         </div>
     )

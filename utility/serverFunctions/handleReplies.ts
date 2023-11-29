@@ -17,8 +17,7 @@ export async function getCommentReplies(commentId: string, seenLimit: number) {
         orderBy: [desc(replies.likes)],
         limit: seenLimit,
         with: {
-            fromUser: true,
-            replyingToUser: true
+            fromUser: true
         }
     });
 

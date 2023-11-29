@@ -8,7 +8,7 @@ import useSeenErrors from '@/utility/useful/useSeenErrors'
 import { addReply } from '@/utility/serverFunctions/handleReplies'
 
 
-export default function MakeReply({ seenCommentId, replyingToUserId, fromReply }: { seenCommentId: string, replyingToUserId: string, fromReply?: boolean }) {
+export default function MakeReply({ seenCommentId, replyingTo, fromReply }: { seenCommentId: string, replyingTo: string, fromReply?: boolean }) {
     const queryClient = useQueryClient()
 
     const [seenErrInput, seenErrInputSet] = useState<Error | ZodError | undefined>()
@@ -26,7 +26,7 @@ export default function MakeReply({ seenCommentId, replyingToUserId, fromReply }
 
     const replyInitialValues: newReply = {
         commentId: seenCommentId,
-        replyingToUserId: replyingToUserId,
+        replyingTo: replyingTo,
         message: "",
     }
 

@@ -1,4 +1,3 @@
-import { Inter } from 'next/font/google'
 import './globals.css'
 import QueryWrapper from '../components/home/QueryWrapper'
 import { Metadata } from 'next'
@@ -7,8 +6,6 @@ import { getServerSession } from "next-auth"
 import SessionProvider from "@/components/home/SessionProvider"
 import { authOptions } from '@/lib/auth/auth-options'
 import { getSpecificUser } from '@/utility/serverFunctions/handleUsers'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Study Hall',
@@ -20,7 +17,7 @@ export default async function RootLayout({ children, }: { children: React.ReactN
 
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         <SessionProvider session={session}>
           <QueryWrapper>
             <NavBar seenUser={session ? await getSpecificUser(session.user.id, "id") : undefined} />

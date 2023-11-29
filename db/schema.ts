@@ -266,7 +266,7 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
 export const replies = mysqlTable("replies", {
     id: varchar("id", { length: 255 }).primaryKey().notNull(),
     userId: varchar("user_id", { length: 255 }).notNull(),
-    replyingToUserId: varchar("replying_to_user_id", { length: 255 }).notNull(),
+    replyingTo: varchar("replying_to_user_id", { length: 255 }),
     commentId: varchar("comment_id", { length: 255 }).notNull(),
     datePosted: datetime("date_posted").notNull(),
     message: varchar("message", { length: 255 }).notNull(),
@@ -275,7 +275,6 @@ export const replies = mysqlTable("replies", {
     (table) => {
         return {
             commentIdIdx: index("comment_id_idx").on(table.commentId),
-            replyingToUserIdIdx: index("replying_To_user_id_index").on(table.replyingToUserId),
             replyLikesIdx: index("reply_likes_index").on(table.likes),
         }
     });
@@ -287,10 +286,6 @@ export const repliesRelations = relations(replies, ({ one }) => ({
     }),
     fromUser: one(users, {
         fields: [replies.userId],
-        references: [users.id]
-    }),
-    replyingToUser: one(users, {
-        fields: [replies.replyingToUserId],
         references: [users.id]
     })
 }));

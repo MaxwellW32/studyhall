@@ -129,7 +129,7 @@ export type newComment = Pick<comment, "postId" | "message">
 export const replySchema = z.object({
     id: z.string().min(1),
     userId: z.string().min(1),
-    replyingToUserId: z.string().min(1),
+    replyingTo: z.string().min(1).nullable(),
     commentId: z.string().min(1),
     datePosted: z.date(),
     message: z.string().min(1),
@@ -138,9 +138,8 @@ export const replySchema = z.object({
 export type reply = z.infer<typeof replySchema> & {
     fromComment?: comment,
     fromUser?: user,
-    replyingToUser?: user
 }
-export type newReply = Pick<reply, "replyingToUserId" | "commentId" | "message">
+export type newReply = Pick<reply, "replyingTo" | "commentId" | "message">
 
 
 

@@ -1,6 +1,6 @@
 "use client"
 import { post, comment } from '@/types'
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import styles from "./style.module.css"
 import DisplayYTVideo from '@/utility/useful/DisplayYTVideo'
 import DisplayImage from '@/utility/useful/DisplayImage'
@@ -17,45 +17,44 @@ import Comment from '../comment/Comment'
 
 export default function Post({ seenPost, fullScreen = true }: { seenPost: post, fullScreen?: boolean }) {
 
-    const [commentLimit, commentLimitSet] = useState(15)
+    const [commentLimiter, commentLimiterSet] = useState(15)
 
     const [viewingComments, viewingCommentsSet] = useState(false)
+    const [postHasComments, postHasCommentsSet] = useState(false)
+
+    useEffect(() => {
+        const checkComment = async () => {
+            const seenComment = await getPostComments(seenPost.id, 1, 0)
+            if (Array.isArray(seenComment)) {
+                postHasCommentsSet(true)
+            }
+        }
+        checkComment()
+    }, [])
 
     const searchComments = async ({ pageParam }: { pageParam: number }) => {
-        const seenComments = await getPostComments(seenPost.id, commentLimit, pageParam)
-
+        const seenComments = await getPostComments(seenPost.id, commentLimiter, pageParam)
         return seenComments
     }
 
     const { data: commentData, error: commentError, fetchNextPage, hasNextPage, } = useInfiniteQuery({
         queryKey: ["comments", seenPost.id],
-        enabled: (viewingComments || fullScreen),
-        initialData: () => {
-            if (seenPost.comments) {
-                return {
-                    pageParams: [0],
-                    pages: [seenPost.comments]
-                }
-            }
-        },
-        initialPageParam: seenPost.comments?.length ?? 0,//offset start
+        enabled: viewingComments,
+        initialPageParam: 0,
         queryFn: searchComments,
         getNextPageParam: (prevData, allPages) => {
-            let commentCount = 0
 
-            allPages.forEach(eachCommentArr => {
-                eachCommentArr.forEach(eachComment => {
-                    if (eachComment.id) {
-                        commentCount++
-                    }
-                })
-            })
-
-            if (commentCount < commentLimit) {
+            if (prevData.length !== commentLimiter) {
+                //check if last data matches what we expected
                 return undefined
             }
 
-            return commentCount + (commentLimit - 1)
+            //count all comments for offset
+            let commentCount = 0
+            allPages.forEach(eachCommentArr => commentCount += eachCommentArr.length)
+
+            //future offset
+            return commentCount
         },
         refetchOnWindowFocus: false,
     })
@@ -119,7 +118,7 @@ export default function Post({ seenPost, fullScreen = true }: { seenPost: post, 
 
             <MakeComment seenPostId={seenPost.id} />
 
-            {commentData?.pages && (viewingComments || fullScreen) && (
+            {commentData?.pages && viewingComments && (
                 <div style={{ padding: "1rem", borderRadius: "1rem", marginTop: "1rem", display: "grid", gap: "1rem" }}>
                     {commentData.pages.map(eachCommentArr => {
 
@@ -132,9 +131,9 @@ export default function Post({ seenPost, fullScreen = true }: { seenPost: post, 
                 </div>
             )}
 
-            {commentData && commentData.pages[0].length > 0 && !viewingComments && !fullScreen && <p className='wordLink' onClick={(e) => { viewingCommentsSet(true); e.stopPropagation() }}>View comments</p>}
+            {postHasComments && !viewingComments && <p className='wordLink' onClick={(e) => { viewingCommentsSet(true); e.stopPropagation() }}>View comments</p>}
 
-            {(viewingComments || fullScreen) &&
+            {viewingComments &&
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
                     {hasNextPage && <p className='wordLink' onClick={(e) => { e.stopPropagation(); fetchNextPage() }}>More Comments</p>}
 

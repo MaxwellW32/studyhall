@@ -39,7 +39,7 @@ export default function Comment({ seenComment }: { seenComment: comment }) {
 
                 <p>{seenComment.message}</p>
 
-                <MakeReply seenCommentId={seenComment.id} replyingToUserId={seenComment.userId} />
+                <MakeReply seenCommentId={seenComment.id} replyingTo={seenComment.userId} />
 
                 {replies && (
                     <div style={{ borderRadius: "1rem", display: "grid", gap: "1rem" }}>

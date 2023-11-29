@@ -23,17 +23,17 @@ export async function getAllCommunities(seenLimit: number, seenOffset: number) {
                 limit: 3,
                 with: {
                     author: true,
-                    comments: {
-                        orderBy: [desc(comments.likes)],
-                        limit: 1,
-                        with: {
-                            fromUser: true,
-                            replies: {
-                                orderBy: [desc(replies.likes)],
-                                limit: 1,
-                            }
-                        }
-                    }
+                    // comments: {
+                    //     orderBy: [desc(comments.likes)],
+                    //     limit: 1,
+                    //     with: {
+                    //         fromUser: true,
+                    //         replies: {
+                    //             orderBy: [desc(replies.likes)],
+                    //             limit: 1,
+                    //         }
+                    //     }
+                    // }
                 }
             },
         }
@@ -52,17 +52,17 @@ export async function getSpecificCommunity(seenCommunityID: string) {
                 limit: 50,
                 with: {
                     author: true,
-                    comments: {
-                        orderBy: [desc(comments.likes)],
-                        limit: 1,
-                        with: {
-                            fromUser: true,
-                            replies: {
-                                orderBy: [desc(replies.likes)],
-                                limit: 1,
-                            }
-                        }
-                    }
+                    // comments: {
+                    //     orderBy: [desc(comments.likes)],
+                    //     limit: 1,
+                    //     with: {
+                    //         fromUser: true,
+                    //         replies: {
+                    //             orderBy: [desc(replies.likes)],
+                    //             limit: 1,
+                    //         }
+                    //     }
+                    // }
                 }
             }
         }
