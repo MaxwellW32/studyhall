@@ -2,7 +2,7 @@
 
 import { newPost, post, postSchema } from "@/types";
 import * as schema from '@/db/schema';
-import { posts, comments } from "@/db/schema"
+import { posts, comments, usersToLikedPosts } from "@/db/schema"
 import { eq, desc } from "drizzle-orm";
 import { usableDb } from "@/db";
 import { authOptions } from '@/lib/auth/auth-options'
@@ -14,6 +14,7 @@ import { sql } from 'drizzle-orm'
 
 export async function getTopPosts(communityId: string, seenLimit: number, seenOffset: number): Promise<post[]> {
     console.log(`$ran get top posts`);
+
     const results = usableDb.query.posts.findMany({
         where: eq(posts.communityId, communityId),
         orderBy: [desc(posts.likes)],
@@ -102,10 +103,35 @@ export async function likePost(postId: string) {
     const session = await getServerSession(authOptions)
     if (!session) redirect("/api/auth/signIn")
 
+    //update table
     await usableDb.update(posts)
         .set({ likes: sql`${posts.likes} + 1` })
         .where(eq(posts.id, postId));
+
+    await usableDb.insert(usersToLikedPosts).values({
+        postId: postId,
+        userId: session.user.id
+    });
 }
+
+export async function checkLikedPostAlready(postId: string) {
+    const session = await getServerSession(authOptions)
+    if (!session) return false
+
+    const results = await usableDb.query.usersToLikedPosts.findMany({
+        where: eq(usersToLikedPosts.userId, session.user.id),
+    });
+
+    let foundInArr = false
+    results.forEach(eachResult => {
+        if (eachResult.postId === postId) {
+            foundInArr = true
+        }
+    })
+
+    return foundInArr
+}
+
 
 export async function updatePost(seenPost: post) {
 

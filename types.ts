@@ -65,6 +65,11 @@ export type user = z.infer<typeof userSchema> & {
     communitiesJoined?: community[],
     studySessionsJoined?: studySession[],
     comments?: comment[],
+
+    likedPosts?: post[],
+    likedComments?: comment[],
+    likedReplies?: reply[],
+
     replies?: reply[]
 }
 
@@ -90,7 +95,8 @@ export type post = z.infer<typeof postSchema> & {
     forCommunity?: community | null,
     forStudySession?: studySession | null,
     tags?: tag[],
-    comments?: comment[]
+    comments?: comment[],
+    likedByUsers?: user[]
 }
 
 export type newPost = Pick<post, "communityId" | "studySessionId" | "message" | "videoUrls" | "imageUrls" | "title">
@@ -114,6 +120,7 @@ export type comment = z.infer<typeof commentsSchema> & {
     parentPost?: post,
     fromUser?: user,
     replies?: reply[],
+    likedByUsers?: user[]
 }
 
 export type newComment = Pick<comment, "postId" | "message">
@@ -138,7 +145,8 @@ export const replySchema = z.object({
 export type reply = z.infer<typeof replySchema> & {
     fromComment?: comment,
     fromUser?: user,
-    replyingToUser?: user
+    replyingToUser?: user,
+    likedByUsers?: user[]
 }
 export type newReply = Pick<reply, "replyingToUserId" | "commentId" | "message">
 
@@ -161,42 +169,3 @@ export type tag = z.infer<typeof tagSchema> & {
     forCommunity?: community[],
     forPosts?: post[]
 }
-
-
-
-
-
-
-
-
-
-
-
-
-// //tagsToCommunities
-// export const tagsToCommunitiesSchema = z.object({
-//     pk: z.string().min(1),
-//     tagId: z.string().min(1),
-//     communityId: z.string().min(1)
-// })
-// export type tagsToCommunities = z.infer<typeof tagsToCommunitiesSchema> & {
-//     tag: tag | undefined,
-//     community: community | undefined
-// }
-
-
-
-
-
-
-
-// //tagsToPosts
-// export const tagsToPostsSchema = z.object({
-//     pk: z.string().min(1),
-//     tagId: z.string().min(1),
-//     postId: z.string().min(1)
-// })
-// export type tagsToPosts = z.infer<typeof tagsToPostsSchema> & {
-//     tag: tag | undefined,
-//     post: post | undefined
-// }

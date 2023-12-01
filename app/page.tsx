@@ -8,7 +8,6 @@ import Community from "@/components/community/Community";
 import { useRouter } from 'next/navigation'
 import getNiceUrl from "@/utility/useful/getNiceUrl";
 import toast from 'react-hot-toast';
-import { validateUserCommunitiesJoinedObj } from "@/utility/savestorage";
 import { useSession } from "next-auth/react";
 import { authOptions } from "@/lib/auth/auth-options";
 import { useInView } from "react-intersection-observer";
@@ -22,13 +21,13 @@ export default function App() {
   const { ref, inView } = useInView()
   const [screenSize,] = useAtom(screenSizeGlobal)
 
-  //ensure storage obj is there for communities joined
-  useEffect(() => {
-    if (session) {
-      validateUserCommunitiesJoinedObj(session.user.id)
-    }
+  // //ensure storage obj is there for communities joined
+  // useEffect(() => {
+  //   if (session) {
+  //     validateUserCommunitiesJoinedObj(session.user.id)
+  //   }
 
-  }, [])
+  // }, [])
 
   const [communityLimit] = useState(20)
 

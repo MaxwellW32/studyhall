@@ -9,7 +9,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import MakeComment from '../comment/MakeComment'
 import { getPostComments } from '@/utility/serverFunctions/handleComments'
 import Link from 'next/link'
-import { getSpecificPost, likePost } from '@/utility/serverFunctions/handlePosts'
+import { checkLikedPostAlready, getSpecificPost, likePost } from '@/utility/serverFunctions/handlePosts'
 import getNiceUsername from '@/utility/useful/getNiceUsername'
 import getNiceUrl from '@/utility/useful/getNiceUrl'
 import { toast } from 'react-hot-toast'
@@ -61,6 +61,23 @@ export default function Post({ seenPost, fullScreen = true }: { seenPost: post, 
         }
     })
 
+
+
+    const [likedPostAlready, likedPostAlreadySet] = useState<boolean>()
+
+    //check if member
+    useEffect(() => {
+        if (!postData) return
+
+        const checkIfLiked = async () => {
+            likedPostAlreadySet(await checkLikedPostAlready(seenPost.id))
+        }
+        checkIfLiked()
+
+    }, [postData])
+
+
+
     const searchComments = async ({ pageParam }: { pageParam: number }) => {
         const seenComments = await getPostComments(seenPost.id, commentLimiter + 1, pageParam)
 
@@ -74,7 +91,6 @@ export default function Post({ seenPost, fullScreen = true }: { seenPost: post, 
 
         return seenComments
     }
-
     const { data: infCommentData, error: commentError, fetchNextPage, } = useInfiniteQuery({
         queryKey: ["comments", seenPost.id],
         initialData: () => {
@@ -110,7 +126,7 @@ export default function Post({ seenPost, fullScreen = true }: { seenPost: post, 
 
     return (
         <div className={styles.postMainDiv}>
-            {postData.forCommunity && <Link className='showUnderline' href={getNiceUrl("community", postData.forCommunity.id, postData.forCommunity.name)}>sh/{postData.forCommunity.name}</Link>}
+            {postData.forCommunity && fullScreen && <Link className='showUnderline' href={getNiceUrl("community", postData.forCommunity.id, postData.forCommunity.name)}>sh/{postData.forCommunity.name}</Link>}
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center" }}>
                 {postData.author && getNiceUsername("u/", postData.author)}
@@ -121,7 +137,14 @@ export default function Post({ seenPost, fullScreen = true }: { seenPost: post, 
             <div style={{ display: "flex", gap: ".5rem", alignItems: 'center' }}>
                 {postData.likes > 0 && <p style={{ marginRight: "-.2rem" }}>{postData.likes}</p>}
 
-                <svg onClick={(e) => { e.stopPropagation(); likePostMutation(postData.id) }} style={{ fill: postData.likes ? "var(--highlightedColor)" : "" }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z" />
+                <svg onClick={(e) => {
+                    e.stopPropagation();
+                    !likedPostAlready && likePostMutation(postData.id)
+                }} style={{
+                    fill: postData.likes ?
+                        likedPostAlready ? "gold" : "var(--highlightedColor)"
+                        : ""
+                }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z" />
                 </svg>
 
                 <h3>{postData.title}</h3>

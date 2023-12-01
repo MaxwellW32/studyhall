@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react";
-import { getMemberCommunitiesForStorageObj, joinCommunity } from "./serverFunctions/handleCommunities";
+import { joinCommunity } from "./serverFunctions/handleCommunities";
 import { revalidatePath } from "next/cache";
 
 export function saveToLocalStorage(keyName: any, item: any) {
@@ -37,33 +37,33 @@ export async function saveCommunitiesJoined(communityId: string, userId: string)
     saveToLocalStorage("userCommunitiesJoined", seenUserCommunitiesJoined)
 }
 
-export function isAMemberOfCommunity(communityId: string, userId: string) {
+// export function isAMemberOfCommunity(communityId: string, userId: string) {
 
-    //read first
-    const seenUserCommunitiesJoined: userCommunitiesJoined = retreiveFromLocalStorage("userCommunitiesJoined") ?? {}
+//     //read first
+//     const seenUserCommunitiesJoined: userCommunitiesJoined = retreiveFromLocalStorage("userCommunitiesJoined") ?? {}
 
-    if (!seenUserCommunitiesJoined[userId]) return false
+//     if (!seenUserCommunitiesJoined[userId]) return false
 
-    let isFound = false
-    seenUserCommunitiesJoined[userId].forEach(eachCommunityId => {
-        if (eachCommunityId === communityId) isFound = true
-    })
+//     let isFound = false
+//     seenUserCommunitiesJoined[userId].forEach(eachCommunityId => {
+//         if (eachCommunityId === communityId) isFound = true
+//     })
 
-    return isFound
-}
+//     return isFound
+// }
 
-export async function validateUserCommunitiesJoinedObj(userId: string) {
-    //this only runs if obj is not there in storage
+// export async function validateUserCommunitiesJoinedObj(userId: string) {
+//     //this only runs if obj is not there in storage
 
-    //read first
-    const seenUserCommunitiesJoined: userCommunitiesJoined = retreiveFromLocalStorage("userCommunitiesJoined")
+//     //read first
+//     const seenUserCommunitiesJoined: userCommunitiesJoined = retreiveFromLocalStorage("userCommunitiesJoined")
 
-    if (!seenUserCommunitiesJoined) {
-        const newUserCommObj: userCommunitiesJoined = {}
+//     if (!seenUserCommunitiesJoined) {
+//         const newUserCommObj: userCommunitiesJoined = {}
 
-        newUserCommObj[userId] = await getMemberCommunitiesForStorageObj(userId)
+//         newUserCommObj[userId] = await getMemberCommunitiesForStorageObj(userId)
 
-        saveToLocalStorage("userCommunitiesJoined", newUserCommObj)
-    }
+//         saveToLocalStorage("userCommunitiesJoined", newUserCommObj)
+//     }
 
-}
+// }

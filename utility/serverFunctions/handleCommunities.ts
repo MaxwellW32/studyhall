@@ -42,7 +42,7 @@ export async function getAllCommunities(seenLimit: number, seenOffset: number) {
     return results
 }
 
-export async function getSpecificCommunity(seenCommunityID: string) {
+export async function getSpecificCommunity(seenCommunityID: string): Promise<community | undefined> {
 
     const result = await usableDb.query.communities.findFirst({
         where: eq(communities.id, seenCommunityID),
@@ -129,7 +129,6 @@ export async function joinCommunity(communityId: string) {
     revalidatePath(`/community/${communityId}`)
 }
 
-
 export async function getCommunityMembers(communityId: string, seenLimit: number, seenOffset: number) {
 
 
@@ -151,18 +150,36 @@ export async function getCommunityMembers(communityId: string, seenLimit: number
     return results
 }
 
-export async function getMemberCommunitiesForStorageObj(userId: string) {
-    //local storage function only to replenish client side comm array - rarely ran
-    console.log(`$called third`);
+export async function isAMemberOfCommunity(communityId: string) {
+    const session = await getServerSession(authOptions)
+    if (!session) return false
+
     const results = await usableDb.query.usersToCommunities.findMany({
-        where: eq(usersToCommunities.userId, userId)
+        where: eq(usersToCommunities.communityId, communityId),
     });
 
-    return results.map(eachResult => {
-        console.log(`$called in loop `, eachResult.communityId);
-        return eachResult.communityId
+    let seenUser = false
+    results.forEach(eachResult => {
+        if (eachResult.userId === session.user.id) {
+            seenUser = true
+        }
     })
+
+    return seenUser
 }
+
+// export async function getMemberCommunitiesForStorageObj(userId: string) {
+//     //local storage function only to replenish client side comm array - rarely ran
+//     console.log(`$called third`);
+//     const results = await usableDb.query.usersToCommunities.findMany({
+//         where: eq(usersToCommunities.userId, userId)
+//     });
+
+//     return results.map(eachResult => {
+//         console.log(`$called in loop `, eachResult.communityId);
+//         return eachResult.communityId
+//     })
+// }
 
 
 

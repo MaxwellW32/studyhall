@@ -29,6 +29,11 @@ export const usersRelations = relations(users, ({ many }) => ({
     communitiesJoined: many(usersToCommunities),
     studySessionsJoined: many(usersToStudySessions),
     comments: many(comments),
+
+    likedPosts: many(usersToLikedPosts),
+    likedComments: many(usersToLikedComments),
+    likedReplies: many(usersToLikedReplies),
+
     replies: many(replies, { relationName: "fromUser" }),
 }));
 
@@ -213,7 +218,8 @@ export const postsRelations = relations(posts, ({ many, one }) => ({
         references: [studySessions.id],
     }),
     tags: many(tagsToPosts),
-    comments: many(comments)
+    comments: many(comments),
+    likedByUsers: many(usersToLikedPosts),
 }));
 
 
@@ -248,7 +254,8 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
         fields: [comments.userId],
         references: [users.id],
     }),
-    replies: many(replies)
+    replies: many(replies),
+    likedByUsers: many(usersToLikedComments),
 }));
 
 
@@ -279,7 +286,7 @@ export const replies = mysqlTable("replies", {
         }
     });
 
-export const repliesRelations = relations(replies, ({ one }) => ({
+export const repliesRelations = relations(replies, ({ one, many }) => ({
     fromComment: one(comments, {
         fields: [replies.commentId],
         references: [comments.id],
@@ -293,7 +300,8 @@ export const repliesRelations = relations(replies, ({ one }) => ({
         fields: [replies.replyingToUserId],
         references: [users.id],
         relationName: 'replyingToUser'
-    })
+    }),
+    likedByUsers: many(usersToLikedReplies),
 }));
 
 
@@ -375,6 +383,89 @@ export const usersToStudySessionsRelations = relations(usersToStudySessions, ({ 
     studySession: one(studySessions, {
         fields: [usersToStudySessions.studySessionId],
         references: [studySessions.id],
+    }),
+}));
+
+
+
+
+
+
+
+export const usersToLikedPosts = mysqlTable('users_to_liked_posts', {
+    userId: varchar("user_id", { length: 255 }).notNull(),
+    postId: varchar("post_id", { length: 255 }).notNull(),
+},
+    (table) => {
+        return {
+            pk: primaryKey({ columns: [table.userId, table.postId] }),
+            userIdIndex: index('userId_idx').on(table.userId)
+        }
+    });
+
+export const usersToLikedPostsRelations = relations(usersToLikedPosts, ({ one }) => ({
+    user: one(users, {
+        fields: [usersToLikedPosts.userId],
+        references: [users.id],
+    }),
+    post: one(posts, {
+        fields: [usersToLikedPosts.postId],
+        references: [posts.id],
+    }),
+}));
+
+
+
+
+
+
+export const usersToLikedComments = mysqlTable('users_to_liked_comments', {
+    userId: varchar("user_id", { length: 255 }).notNull(),
+    commentId: varchar("comment_id", { length: 255 }).notNull(),
+},
+    (table) => {
+        return {
+            pk: primaryKey({ columns: [table.userId, table.commentId] }),
+            userIdIndex: index('userId_idx').on(table.userId)
+        }
+    });
+
+export const usersToLikedCommentsRelations = relations(usersToLikedComments, ({ one }) => ({
+    user: one(users, {
+        fields: [usersToLikedComments.userId],
+        references: [users.id],
+    }),
+    comment: one(comments, {
+        fields: [usersToLikedComments.commentId],
+        references: [comments.id],
+    }),
+}));
+
+
+
+
+
+
+
+export const usersToLikedReplies = mysqlTable('users_to_liked_replies', {
+    userId: varchar("user_id", { length: 255 }).notNull(),
+    replyId: varchar("reply_id", { length: 255 }).notNull(),
+},
+    (table) => {
+        return {
+            pk: primaryKey({ columns: [table.userId, table.replyId] }),
+            userIdIndex: index('userId_idx').on(table.userId)
+        }
+    });
+
+export const usersToLikedRepliesRelations = relations(usersToLikedReplies, ({ one }) => ({
+    user: one(users, {
+        fields: [usersToLikedReplies.userId],
+        references: [users.id],
+    }),
+    reply: one(replies, {
+        fields: [usersToLikedReplies.replyId],
+        references: [replies.id],
     }),
 }));
 
