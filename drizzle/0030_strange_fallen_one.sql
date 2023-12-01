@@ -1,0 +1,1 @@
+ALTER TABLE `replies` MODIFY COLUMN `replying_to_user_id` varchar(255) NOT NULL;

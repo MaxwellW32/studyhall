@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth"
 import SessionProvider from "@/components/home/SessionProvider"
 import { authOptions } from '@/lib/auth/auth-options'
 import { getSpecificUser } from '@/utility/serverFunctions/handleUsers'
+import AtomLoader from '@/components/home/AtomLoader'
 
 export const metadata: Metadata = {
   title: 'Study Hall',
@@ -20,6 +21,7 @@ export default async function RootLayout({ children, }: { children: React.ReactN
       <body>
         <SessionProvider session={session}>
           <QueryWrapper>
+            <AtomLoader />
             <NavBar seenUser={session ? await getSpecificUser(session.user.id, "id") : undefined} />
             {children}
           </QueryWrapper>

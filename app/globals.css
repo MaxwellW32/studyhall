@@ -26,7 +26,7 @@ body {
 .bigText {}
 
 .smallText {
-    font-size: .5rem;
+    font-size: .7rem;
 }
 
 h1 {
@@ -86,11 +86,10 @@ input::placeholder {
     text-transform: capitalize;
 }
 
-.timeText {
+time {
     font-style: italic;
     font-size: .7rem;
 }
-
 
 .profileImage {
     aspect-ratio: 1/1;

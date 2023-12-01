@@ -29,7 +29,7 @@ export const usersRelations = relations(users, ({ many }) => ({
     communitiesJoined: many(usersToCommunities),
     studySessionsJoined: many(usersToStudySessions),
     comments: many(comments),
-    replies: many(replies),
+    replies: many(replies, { relationName: "fromUser" }),
 }));
 
 
@@ -266,7 +266,7 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
 export const replies = mysqlTable("replies", {
     id: varchar("id", { length: 255 }).primaryKey().notNull(),
     userId: varchar("user_id", { length: 255 }).notNull(),
-    replyingTo: varchar("replying_to_user_id", { length: 255 }),
+    replyingToUserId: varchar("replying_to_user_id", { length: 255 }).notNull(),
     commentId: varchar("comment_id", { length: 255 }).notNull(),
     datePosted: datetime("date_posted").notNull(),
     message: varchar("message", { length: 255 }).notNull(),
@@ -286,7 +286,13 @@ export const repliesRelations = relations(replies, ({ one }) => ({
     }),
     fromUser: one(users, {
         fields: [replies.userId],
-        references: [users.id]
+        references: [users.id],
+        relationName: 'fromUser'
+    }),
+    replyingToUser: one(users, {
+        fields: [replies.replyingToUserId],
+        references: [users.id],
+        relationName: 'replyingToUser'
     })
 }));
 

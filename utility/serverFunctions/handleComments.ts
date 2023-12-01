@@ -26,6 +26,18 @@ export async function getPostComments(seenPostId: string, limitAmt: number, offs
     return results
 }
 
+export async function getSpecificComment(commentId: string): Promise<comment | undefined> {
+
+    const results = await usableDb.query.comments.findFirst({
+        where: eq(comments.id, commentId),
+        with: {
+            fromUser: true
+        }
+    });
+
+    return results
+}
+
 export async function addComment(seenComment: newComment) {
 
 
@@ -73,8 +85,6 @@ export async function likeComment(commentId: string) {
     await usableDb.update(comments)
         .set({ likes: sql`${comments.likes} + 1` })
         .where(eq(comments.id, commentId));
-
-    revalidatePath("/")
 }
 
 export async function deleteComment(seenId: string) {

@@ -30,7 +30,7 @@ export default function EditUser({ seenUser }: { seenUser: user }) {
 
     return (
         <div>
-            <h3>Edit User Info {seenUser.name}</h3>
+            <h3 style={{ margin: "1rem" }}>Edit User Info {seenUser.name}</h3>
 
             <div style={{ display: "grid" }}>
                 <label>Name</label>

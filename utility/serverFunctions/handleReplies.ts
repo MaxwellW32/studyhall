@@ -10,14 +10,29 @@ import { v4 as uuidv4 } from "uuid"
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-export async function getCommentReplies(commentId: string, seenLimit: number) {
+export async function getCommentReplies(commentId: string, seenLimit: number, seenOffset: number): Promise<reply[]> {
 
     const results = await usableDb.query.replies.findMany({
         where: eq(replies.commentId, commentId),
         orderBy: [desc(replies.likes)],
         limit: seenLimit,
+        offset: seenOffset,
         with: {
-            fromUser: true
+            fromUser: true,
+            replyingToUser: true
+        }
+    });
+
+    return results
+}
+
+export async function getSpecificReply(replyId: string): Promise<reply | undefined> {
+
+    const results = await usableDb.query.replies.findFirst({
+        where: eq(replies.id, replyId),
+        with: {
+            fromUser: true,
+            replyingToUser: true
         }
     });
 
@@ -42,7 +57,6 @@ export async function addReply(seenReply: newReply) {
     await usableDb.insert(replies).values(newReply);
 }
 
-
 export async function updateReply(newReply: Pick<reply, "id" | "message">) {
 
     replySchema.parse(newReply.id)
@@ -55,7 +69,6 @@ export async function updateReply(newReply: Pick<reply, "id" | "message">) {
         .where(eq(replies.id, newReply.id));
 }
 
-
 export async function likeReply(replyId: string) {
 
     const session = await getServerSession(authOptions)
@@ -64,8 +77,6 @@ export async function likeReply(replyId: string) {
     await usableDb.update(replies)
         .set({ likes: sql`${replies.likes} + 1` })
         .where(eq(replies.id, replyId));
-
-    revalidatePath("/")
 }
 
 export async function deleteComment(seenId: string) {

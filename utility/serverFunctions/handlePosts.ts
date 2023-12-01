@@ -13,7 +13,7 @@ import { redirect } from "next/navigation";
 import { sql } from 'drizzle-orm'
 
 export async function getTopPosts(communityId: string, seenLimit: number, seenOffset: number): Promise<post[]> {
-
+    console.log(`$ran get top posts`);
     const results = usableDb.query.posts.findMany({
         where: eq(posts.communityId, communityId),
         orderBy: [desc(posts.likes)],
@@ -55,21 +55,21 @@ export async function getLatestPosts(communityId: string, seenLimit: number, see
 
 }
 
-export async function getSpecificPost(postId: string) {
-
+export async function getSpecificPost(postId: string): Promise<post | undefined> {
+    console.log(`$ran specific`);
     const results = await usableDb.query.posts.findFirst({
         where: eq(posts.id, postId),
         with: {
             forCommunity: true,
             author: true,
-            comments: {
-                limit: 10,
-                with: {
-                    replies: {
-                        limit: 1
-                    }
-                }
-            }
+            // comments: {
+            //     limit: 10,
+            //     with: {
+            //         replies: {
+            //             limit: 1
+            //         }
+            //     }
+            // }
         }
     });
 
@@ -99,15 +99,12 @@ export async function addPost(seenPost: newPost) {
 }
 
 export async function likePost(postId: string) {
-
     const session = await getServerSession(authOptions)
     if (!session) redirect("/api/auth/signIn")
 
     await usableDb.update(posts)
         .set({ likes: sql`${posts.likes} + 1` })
         .where(eq(posts.id, postId));
-
-    revalidatePath("/")
 }
 
 export async function updatePost(seenPost: post) {
