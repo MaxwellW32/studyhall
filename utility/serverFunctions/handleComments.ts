@@ -1,7 +1,7 @@
 "use server"
 
 import { comment, commentsSchema, newComment, user } from "@/types";
-import { comments, users, replies } from "@/db/schema"
+import { comments, users, replies, usersToLikedComments } from "@/db/schema"
 import { eq, desc } from "drizzle-orm";
 import { usableDb } from "@/db/index";
 import { authOptions } from '@/lib/auth/auth-options'
@@ -82,10 +82,34 @@ export async function likeComment(commentId: string) {
     const session = await getServerSession(authOptions)
     if (!session) redirect("/api/auth/signIn")
 
+    await usableDb.insert(usersToLikedComments).values({
+        commentId: commentId,
+        userId: session.user.id
+    });
+
     await usableDb.update(comments)
         .set({ likes: sql`${comments.likes} + 1` })
         .where(eq(comments.id, commentId));
 }
+
+export async function checkLikedCommentAlready(commentId: string) {
+    const session = await getServerSession(authOptions)
+    if (!session) return false
+
+    const results = await usableDb.query.usersToLikedComments.findMany({
+        where: eq(usersToLikedComments.userId, session.user.id),
+    });
+
+    let foundInArr = false
+    results.forEach(eachResult => {
+        if (eachResult.commentId === commentId) {
+            foundInArr = true
+        }
+    })
+
+    return foundInArr
+}
+
 
 export async function deleteComment(seenId: string) {
 

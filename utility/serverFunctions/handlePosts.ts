@@ -103,15 +103,15 @@ export async function likePost(postId: string) {
     const session = await getServerSession(authOptions)
     if (!session) redirect("/api/auth/signIn")
 
-    //update table
-    await usableDb.update(posts)
-        .set({ likes: sql`${posts.likes} + 1` })
-        .where(eq(posts.id, postId));
-
     await usableDb.insert(usersToLikedPosts).values({
         postId: postId,
         userId: session.user.id
     });
+
+    //update table
+    await usableDb.update(posts)
+        .set({ likes: sql`${posts.likes} + 1` })
+        .where(eq(posts.id, postId));
 }
 
 export async function checkLikedPostAlready(postId: string) {

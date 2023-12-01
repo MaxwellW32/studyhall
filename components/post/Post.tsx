@@ -65,7 +65,7 @@ export default function Post({ seenPost, fullScreen = true }: { seenPost: post, 
 
     const [likedPostAlready, likedPostAlreadySet] = useState<boolean>()
 
-    //check if member
+    //check if liked already
     useEffect(() => {
         if (!postData) return
 
