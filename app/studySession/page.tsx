@@ -16,6 +16,7 @@ export default function Home() {
 
     socket = io("http://localhost:3001");
     console.log(`$socket`, socket);
+    console.log(`$`);
 
     const handleJoin = () => {
         if (userName !== "" && roomId !== "") {
