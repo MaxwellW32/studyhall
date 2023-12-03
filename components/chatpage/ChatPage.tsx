@@ -13,8 +13,19 @@ const ChatPage = ({ socket, username, roomId }: any) => {
     const [currentMsg, setCurrentMsg] = useState("");
     const [chat, setChat] = useState<IMsgDataTypes[]>([]);
 
+    useEffect(() => {
+        socket.on("receive_msg", (data: IMsgDataTypes) => {
+            setChat((pre) => [...pre, data]);
+        });
+
+        return () => {
+            socket.off("receive_msg")
+        }
+    }, []);
+
     const sendData = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
         if (currentMsg !== "") {
             const msgData: IMsgDataTypes = {
                 roomId,
@@ -25,18 +36,12 @@ const ChatPage = ({ socket, username, roomId }: any) => {
                     ":" +
                     new Date(Date.now()).getMinutes(),
             };
+
             await socket.emit("send_msg", msgData);
+            setChat((pre) => [...pre, msgData]);
             setCurrentMsg("");
         }
     };
-
-
-    useEffect(() => {
-        socket?.on("receive_msg", (data: IMsgDataTypes) => {
-            setChat((pre) => [...pre, data]);
-        });
-    }, [socket]);
-
 
     return (
         <div className={style.chat_div}>
