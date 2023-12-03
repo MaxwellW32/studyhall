@@ -10,8 +10,7 @@
     "introspect": "drizzle-kit introspect:mysql",
     "migrate": "drizzle-kit generate:mysql",
     "push": "drizzle-kit push:mysql",
-    "studio": "drizzle-kit studio",
-    "node": "node server.js"
+    "studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.8",
