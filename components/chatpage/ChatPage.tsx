@@ -26,21 +26,21 @@ const ChatPage = ({ socket, username, roomId }: any) => {
     const sendData = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (currentMsg !== "") {
-            const msgData: IMsgDataTypes = {
-                roomId,
-                user: username,
-                msg: currentMsg,
-                time:
-                    new Date(Date.now()).getHours() +
-                    ":" +
-                    new Date(Date.now()).getMinutes(),
-            };
+        if (currentMsg === "") return
 
-            await socket.emit("send_msg", msgData);
-            setChat((pre) => [...pre, msgData]);
-            setCurrentMsg("");
-        }
+        const msgData: IMsgDataTypes = {
+            roomId,
+            user: username,
+            msg: currentMsg,
+            time:
+                new Date(Date.now()).getHours() +
+                ":" +
+                new Date(Date.now()).getMinutes(),
+        };
+
+        await socket.emit("send_msg", msgData);
+        setChat((pre) => [...pre, msgData]);
+        setCurrentMsg("");
     };
 
     return (
