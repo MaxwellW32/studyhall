@@ -30,6 +30,7 @@
     "next": "14.0.2",
     "next-auth": "^4.24.5",
     "next-connect": "^1.0.0-next.4",
+    "peerjs": "^1.5.1",
     "react": "^18",
     "react-dom": "^18",
     "react-hot-toast": "^2.4.1",
