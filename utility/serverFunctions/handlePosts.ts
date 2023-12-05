@@ -101,7 +101,7 @@ export async function addPost(seenPost: newPost) {
 
 export async function likePost(postId: string) {
     const session = await getServerSession(authOptions)
-    if (!session) redirect("/api/auth/signIn")
+    if (!session) redirect("/api/auth/signin")
 
     await usableDb.insert(usersToLikedPosts).values({
         postId: postId,

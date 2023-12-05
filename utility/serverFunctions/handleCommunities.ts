@@ -91,6 +91,14 @@ export async function updateCommunity(seenCommunity: Omit<community, "memberCoun
 
     communitySchema.omit({ memberCount: true, userId: true }).parse(seenCommunity)
 
+    const validateSeenCommunity = await getSpecificCommunity(seenCommunity.id)
+    if (!validateSeenCommunity) throw new Error("Couldn't validate")
+
+    const session = await getServerSession(authOptions)
+    if (!session) throw new Error("No session")
+
+    if (validateSeenCommunity.userId !== session.user.id) throw new Error("Not correct user to update this community")
+
     await usableDb.update(communities)
         .set({
             name: seenCommunity.name,
@@ -112,7 +120,7 @@ export async function deleteCommunity(seenCommunity: Pick<community, "id">) {
 export async function joinCommunity(communityId: string) {
 
     const session = await getServerSession(authOptions)
-    if (!session) redirect(`/api/auth/signIn`)
+    if (!session) redirect(`/api/auth/signin`)
 
     await usableDb.insert(usersToCommunities).values({
         userId: session.user.id,

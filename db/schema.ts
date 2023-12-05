@@ -1,4 +1,4 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, timestamp, primaryKey, varchar, text, date, int, datetime, longtext, PrimaryKey, bigint, uniqueIndex } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, timestamp, primaryKey, varchar, text, date, int, datetime, longtext, PrimaryKey, bigint, uniqueIndex, boolean } from "drizzle-orm/mysql-core"
 import { relations } from 'drizzle-orm';
 import type { AdapterAccount } from "@auth/core/adapters"
 
@@ -146,11 +146,17 @@ export type postTest = typeof posts.$inferSelect;
 
 
 
+
+
+
+
+
 export const studySessions = mysqlTable("studysessions", {
     id: varchar("id", { length: 255 }).primaryKey().notNull(),
     userId: varchar("user_id", { length: 255 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
-    authorizedMemberList: text("authorized_member_list")
+    authorizedMemberList: text("authorized_member_list"),
+    allowAll: boolean("allow_all").notNull().default(false),
 });
 
 export const studySessionsRelations = relations(studySessions, ({ one, many }) => ({

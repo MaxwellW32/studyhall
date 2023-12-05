@@ -80,7 +80,7 @@ export async function updateComment(newComment: Pick<comment, 'id' | "message">)
 export async function likeComment(commentId: string) {
 
     const session = await getServerSession(authOptions)
-    if (!session) redirect("/api/auth/signIn")
+    if (!session) redirect("/api/auth/signin")
 
     await usableDb.insert(usersToLikedComments).values({
         commentId: commentId,

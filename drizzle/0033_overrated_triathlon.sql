@@ -1,0 +1,1 @@
+ALTER TABLE `studysessions` ADD `allow_all` boolean DEFAULT false NOT NULL;

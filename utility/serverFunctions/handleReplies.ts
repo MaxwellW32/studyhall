@@ -72,7 +72,7 @@ export async function updateReply(newReply: Pick<reply, "id" | "message">) {
 export async function likeReply(replyId: string) {
 
     const session = await getServerSession(authOptions)
-    if (!session) redirect("/api/auth/signIn")
+    if (!session) redirect("/api/auth/signin")
 
     await usableDb.insert(usersToLikedReplies).values({
         replyId: replyId,
