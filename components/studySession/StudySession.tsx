@@ -2,7 +2,6 @@
 
 import { studySession, user } from '@/types'
 import styles from "./page.module.css";
-import { io } from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
 import { Peer } from "peerjs"; Peer
 import type { DataConnection } from "peerjs";
@@ -13,15 +12,14 @@ import { changeStudySessionsServObj, readStudySessionsServObj } from '@/utility/
 export default function StudySession({ seenStudySession, signedInUserId }: { seenStudySession: studySession, signedInUserId?: string }) {
 
     const [peer, peerSet] = useState<Peer>()
+    const [connections, connectionsSet] = useState<DataConnection[]>([])
 
     const [localUserId, localUserIdSet] = useState("")
 
     const lastSavedVersionNumber = useRef("")
     const lastSavedPeerIdsSeen = useRef<string[]>([])
 
-    const [connections, connectionsSet] = useState<DataConnection[]>([])
 
-    const [remotePeerIdInput, remotePeerIdInputSet] = useState("")
     const [peerConnected, peerConnectedSet] = useState(false)
 
     const [currentMessage, currentMessageSet] = useState("")
@@ -205,16 +203,9 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
             <p>Your id {peer?.id}</p>
 
-            {peerConnected ? (
-                <>
-                    <button onClick={disconnectFromPeers}>Disconnect</button>
-                </>
-            ) : (
-                <>
-                    <input value={remotePeerIdInput} onChange={(e) => { remotePeerIdInputSet(e.target.value) }} type="text" placeholder="Enter peer id" />
-                    {remotePeerIdInput.length > 0 && <button onClick={() => { connectToPeer(remotePeerIdInput) }}>Connect to Peer</button>}
-                </>
-            )}
+            {peerConnected &&
+                <button onClick={disconnectFromPeers}>Disconnect</button>
+            }
 
             {peerConnected && (
                 <div style={{ backgroundColor: "#0f0" }}>

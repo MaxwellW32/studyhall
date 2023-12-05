@@ -97,7 +97,7 @@ export async function changeStudySessionsServObj(studySessionId: string, userId:
     if (!studySessionsServObj[studySessionId]) {
         studySessionsServObj[studySessionId] = {
             members: {},
-            version: versionStr,
+            version: uuidv4(),
         };
     }
 
