@@ -96,6 +96,14 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     const [refresher, refresherSet] = useState(false)
 
+    const localStream = useRef<null | MediaStream>(null);
+    const remoteStream = useRef<null | MediaStream>(null);
+
+    const remoteVideosRef = useRef<HTMLVideoElement[]>([]);
+
+    const myVideoRef = useRef<HTMLVideoElement>(null!);
+
+    const remoteVideosCont = useRef<HTMLDivElement>(null!);
 
     //handle peer events
     const mounted = useRef(false)
@@ -132,11 +140,34 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
             });
         });
 
+        //handle video calls
+        peer.on("call", (call) => {
+            console.log(`$seeing someone calling`);
+            const newVid = document.createElement("video")
+
+            const runit = async () => {
+                myVideoRef.current.muted = true //mut my video
+
+                localStream.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                addlocalVideoStream(myVideoRef.current, localStream.current)
+
+                call.answer(localStream.current!) //send em my data
+            }
+            runit()
+
+            call.on("stream", (userVideoStream) => {
+                addRemoteVideoStream(newVid, userVideoStream)
+            })
+
+            // call.on("close", () => {
+            //     newVid.remove()
+            // })
+        })
+
         peer.on("error", (err) => {
             console.log(`$peer err bounds`, err.message);
         })
     }, [])
-
 
     //snap chat on new message
     useEffect(() => {
@@ -144,31 +175,6 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
         chatRef.current.scrollTop = chatRef.current.scrollHeight
     }, [chat, userWantsToScroll])
-
-
-    //all ways people can exit
-    //broswer close
-    //unmount
-    //disconnect button
-
-    const handleUnload = (e: BeforeUnloadEvent) => {
-        // Cancel the event
-        e.preventDefault();
-
-        // Chrome requires returnValue to be set
-        e.returnValue = '';
-
-        // Display a confirmation dialog
-        let confirmationMessage = 'Are you sure you want to leave?';
-        (e || window.event).returnValue = confirmationMessage; // Standard for most browsers
-
-        if (window.confirm(confirmationMessage)) {
-            // Call your cleanup function here
-            disconnectConnections();
-        }
-
-        return confirmationMessage; // For some older browsers
-    }
 
     useEffect(() => {
         // Register the event listener for beforeunload
@@ -250,11 +256,80 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         refresherSet(prev => !prev)
     }
 
+    const handleUnload = (e: BeforeUnloadEvent) => {
+        // Cancel the event
+        e.preventDefault();
+
+        // Chrome requires returnValue to be set
+        e.returnValue = '';
+
+        // Display a confirmation dialog
+        let confirmationMessage = 'Are you sure you want to leave?';
+        (e || window.event).returnValue = confirmationMessage; // Standard for most browsers
+
+        if (window.confirm(confirmationMessage)) {
+            // Call your cleanup function here
+            disconnectConnections();
+        }
+
+        return confirmationMessage; // For some older browsers
+    }
+
+
+
+    //camera
+    const makeVideoCall = async () => {
+
+        myVideoRef.current.muted = true //mut my video
+
+        localStream.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        addlocalVideoStream(myVideoRef.current, localStream.current)
+
+        //send data across
+        sendConnections.current.forEach(eachConnection => {
+            callNewUser(eachConnection.peer, localStream.current!)
+        })
+    }
+
+    const callNewUser = (userId: string, stream: MediaStream) => {
+        const call = peer.call(userId, stream);
+
+        const newVid = document.createElement("video")
+
+        call.on("stream", (remoteVideoStream) => {
+            addRemoteVideoStream(newVid, remoteVideoStream)
+        })
+
+        call.on("close", () => {
+            newVid.remove()
+        })
+    }
+
+    const addlocalVideoStream = (video: HTMLVideoElement, stream: MediaStream) => {
+        video.srcObject = stream;
+
+        video.addEventListener("loadedmetadata", () => {
+            video.play()
+        })
+    }
+
+    const addRemoteVideoStream = (video: HTMLVideoElement, stream: MediaStream) => {
+        remoteVideosRef.current.push(video)
+
+        video.srcObject = stream;
+
+        video.addEventListener("loadedmetadata", () => {
+            video.play()
+        })
+
+        remoteVideosCont.current.append(video)
+    }
+
     return (
         <div>
             {sendConnections.current.length > 0 && (
                 <div>
-                    <p style={{ color: "#0f0" }}>People online</p>
+                    <p style={{ color: "#0f0" }}>{sendConnections.current.length} {sendConnections.current.length === 1 ? "other person" : "People"} online</p>
                     <button onClick={disconnectConnections}>Disconnect</button>
                 </div>
             )}
@@ -279,6 +354,16 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
                     <button onClick={sendMessage}>Send Message</button>
                 </div>
             </div>
+
+            <div>
+                <video style={{ aspectRatio: "19/6", width: "300px" }} ref={myVideoRef}></video>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, 300px)" }} ref={remoteVideosCont}>
+                    <p>Remote videos</p>
+                </div>
+            </div>
+
+            <button onClick={makeVideoCall}>WebCam Bttn</button>
         </div>
     );
 }
