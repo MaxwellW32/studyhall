@@ -3,7 +3,7 @@
 import { authorizedMemberList, studySession, user } from '@/types'
 import styles from "./page.module.css";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Peer } from "peerjs"; Peer
+import { Peer } from "peerjs";
 import type { DataConnection } from "peerjs";
 import { v4 as uuidV4 } from "uuid"
 import { retreiveFromLocalStorage, saveToLocalStorage } from '@/utility/savestorage';
@@ -11,13 +11,25 @@ import { changeStudySessionsServObj, readStudySessionsServObj } from '@/utility/
 import { wait } from '@/utility/useful/NiceFunctions';
 
 export default function StudySession({ seenStudySession, signedInUserId }: { seenStudySession: studySession, signedInUserId?: string }) {
-    const [peer] = useState<Peer>(new Peer)
+    // const [peer] = useState<Peer>(new Peer)
+
+    const [peer] = useState<Peer>(() => {
+
+        fetch(`/api/peer/peerServer`)
+
+        return new Peer(uuidV4(), {
+            host: "localhost",
+            port: 9000,
+            path: "/myPeerServer",
+        })
+    })
 
     const sendConnections = useRef<DataConnection[]>([])
 
     const lastSavedVersionNumber = useRef("")
     const lastSavedPeerIdsSeen = useRef<string[]>([])
 
+    const chatRef = useRef<HTMLDivElement>(null!)
 
     const [peerConnected, peerConnectedSet] = useState(false)
     const [roomFull, roomFullSet] = useState(false)
@@ -25,7 +37,9 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     const [currentMessage, currentMessageSet] = useState("")
     const [chat, chatSet] = useState<string[]>([])
 
-    const [authorizedMemberList, authorizedMemberListSet] = useState<authorizedMemberList | null>(seenStudySession.authorizedMemberList ? JSON.parse(seenStudySession.authorizedMemberList) : null)
+    const authorizedMemberList = useMemo<authorizedMemberList | null>(() => {
+        return seenStudySession.authorizedMemberList ? JSON.parse(seenStudySession.authorizedMemberList) : null
+    }, [seenStudySession.authorizedMemberList])
 
     const [localUserId] = useState(() => {
         let localid = ""
@@ -52,7 +66,25 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         return localid
     })
 
-    const userInAutorizedList = useMemo(() => {
+    const userRole = useMemo<"host" | "coHost" | "normal">(() => {
+        if (!authorizedMemberList) {
+            if (signedInUserId && signedInUserId === seenStudySession.userId) {
+                return "host"
+            } else {
+                return "normal"
+            }
+        }
+
+        if (authorizedMemberList[localUserId] !== undefined) {
+            return authorizedMemberList[localUserId].role
+        }
+
+        return "normal"
+
+    }, [authorizedMemberList])
+
+
+    const userInAuthorizedList = useMemo(() => {
         if (!authorizedMemberList) return false
 
         const userInAuthorizedList = authorizedMemberList[localUserId]
@@ -78,13 +110,26 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
             peerConnectedSet(true)
 
             conn.on('data', (data) => {
-                chatSet(prevMessages => [data as string, ...prevMessages])
+                chatSet(prevMessages => [...prevMessages, data as string])
+            });
+
+            conn.on('close', () => {
+                console.log(`$closed conn`);
             });
         });
 
 
         serverPingLoop()
     }, [])
+
+    const [userWantsToScroll, userWantsToScrollSet] = useState(false)
+
+    //snap chat on new message
+    useEffect(() => {
+        if (chat.length < 1 || userWantsToScroll) return
+
+        chatRef.current.scrollTop = chatRef.current.scrollHeight
+    }, [chat, userWantsToScroll])
 
 
     const serverLoopInterval = useRef<undefined | NodeJS.Timeout>(undefined)
@@ -181,57 +226,60 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
         }, serverLoopTime.current)
     }
-
-
-
     const sendMessage = () => {
         sendConnections.current.forEach(eachConnection => {
             eachConnection.send(currentMessage);
         })
 
-        chatSet(prevMessages => [currentMessage, ...prevMessages])
+        chatSet(prevMessages => [...prevMessages, currentMessage])
         currentMessageSet("")
     }
-
     const connectToPeer = (peerId: string) => {
         sendConnections.current.push(peer.connect(peerId))
 
         peerConnectedSet(true)
     }
-
     const disconnectFromPeers = () => {
         sendConnections.current.forEach(eachConnection => {
             eachConnection.close()
         })
+
+        peerConnectedSet(false)
     }
 
     return (
         <div>
-            <p>Here in study session</p>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
+                {peerConnected && <p style={{ color: 'green' }}>Connected</p>}
 
-            {peerConnected && <p style={{ color: 'green' }}>Connected</p>}
+                {roomFull && <p>Room closed off</p>}
+            </div>
 
-            <p>Your id {peer?.id}</p>
-
-            {roomFull && <p>Room closed off</p>}
 
             {peerConnected &&
-                <>
+                <div>
                     <button onClick={disconnectFromPeers}>Disconnect</button>
 
-                    {userInAutorizedList && authorizedMemberList && authorizedMemberList[localUserId].role === ("host" || "coHost") && (
+                    {userInAuthorizedList && userRole === ("host" || "coHost") && (
                         <button onClick={() => {
                             changeStudySessionsServObj(seenStudySession.id, localUserId, peer.id, uuidV4(), !roomFull)
-                        }}>{roomFull ? "Open Up Room" : "Room Full?"}</button>
+                        }}>{roomFull ? "Open Room" : "Close Room"}</button>
                     )}
-                </>
+                </div>
             }
 
             {peerConnected && (
                 <div style={{ backgroundColor: "#0f0" }}>
                     <p>chat room</p>
 
-                    <div style={{ display: "grid", gap: ".5rem", maxHeight: "100px", overflowY: "auto" }}>
+                    <div ref={chatRef} style={{ display: "grid", gap: ".5rem", height: "60vh", overflowY: "auto", gridAutoRows: "70px" }}
+                        onScroll={() => {
+                            const calcScrollTop = chatRef.current.scrollHeight - chatRef.current.clientHeight
+                            const isAtBottom = calcScrollTop > (chatRef.current.scrollTop - 10) && calcScrollTop < (chatRef.current.scrollTop + 10)
+
+                            // Update state based on user scroll position
+                            userWantsToScrollSet(!isAtBottom);
+                        }}>
                         {chat.map((eachMessage, eachMessageIndex) => {
                             return <p style={{ backgroundColor: "#fff", color: "#000", padding: "1rem" }} key={eachMessageIndex}>{eachMessage}</p>
                         })}
