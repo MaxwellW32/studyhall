@@ -85,32 +85,35 @@ const studySessionsServObj: {
         members: {
             //each key is a user id either local or official
             [key: string]: {
-                peerId: string | undefined
+                peerId: string
             }
         },
-        version: string
+        version: string,
+        roomFull: boolean
     }
 } = {}
 
-export async function changeStudySessionsServObj(studySessionId: string, userId: string, peerId: string, versionStr: string) {
+export async function changeStudySessionsServObj(studySessionId: string, userId: string, peerId: string, versionStr: string, roomFull?: boolean) {
 
     if (!studySessionsServObj[studySessionId]) {
         studySessionsServObj[studySessionId] = {
             members: {},
             version: uuidv4(),
+            roomFull: false
         };
     }
 
     // Check if the member exists, if not, initialize it
     if (!studySessionsServObj[studySessionId].members[userId]) {
         studySessionsServObj[studySessionId].members[userId] = {
-            peerId: undefined,
+            peerId: peerId,
         };
     }
 
     // Update the peerId and version
     studySessionsServObj[studySessionId].members[userId].peerId = peerId;
     studySessionsServObj[studySessionId].version = versionStr;
+    if (roomFull !== undefined) studySessionsServObj[studySessionId].roomFull = roomFull;
 }
 
 export async function readStudySessionsServObj(studySessionId: string) {
