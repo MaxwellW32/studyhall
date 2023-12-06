@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
 const { PeerServer } = require("peer");
-// import { PeerServer } from "peer";
+
+//this page only runs in dev mode - need Websocket provider
+
 let alreadyStarted = false
 
 const peerHandler = (req: NextApiRequest, res: NextApiResponse) => {

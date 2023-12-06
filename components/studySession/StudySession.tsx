@@ -7,32 +7,31 @@ import { Peer } from "peerjs";
 import type { DataConnection } from "peerjs";
 import { v4 as uuidV4 } from "uuid"
 import { retreiveFromLocalStorage, saveToLocalStorage } from '@/utility/savestorage';
-import { changeStudySessionsServObj, readStudySessionsServObj } from '@/utility/serverFunctions/handlestudySessions';
+import { changeStudySessionsServObj, readStudySessionsServObj, removeUserFromstudySessionsServObj } from '@/utility/serverFunctions/handlestudySessions';
 import { wait } from '@/utility/useful/NiceFunctions';
+import { toast } from 'react-hot-toast';
+import { inProduction } from '@/utility/globalState';
 
 export default function StudySession({ seenStudySession, signedInUserId }: { seenStudySession: studySession, signedInUserId?: string }) {
-    const [peer] = useState<Peer>(new Peer) //prod peer
+    const [peer] = useState<Peer>(() => {
 
-    // const [peer] = useState<Peer>(() => {
+        if (inProduction) return new Peer
 
-    //     fetch(`/api/peer/peerServer`)
 
-    //     return new Peer(uuidV4(), {
-    //         host: "localhost",
-    //         port: 9000,
-    //         path: "/myPeerServer",
-    //     })
-    // })//dev peer
+        fetch(`/api/peer/peerServer`)
+
+        return new Peer(uuidV4(), {
+            host: "localhost",
+            port: 9000,
+            path: "/myPeerServer",
+        })
+    })
 
     const sendConnections = useRef<DataConnection[]>([])
 
-    const lastSavedVersionNumber = useRef("")
-    const lastSavedPeerIdsSeen = useRef<string[]>([])
-
     const chatRef = useRef<HTMLDivElement>(null!)
 
-    const [peerConnected, peerConnectedSet] = useState(false)
-    const [roomFull, roomFullSet] = useState(false)
+    // const [roomFull, roomFullSet] = useState(false)
 
     const [currentMessage, currentMessageSet] = useState("")
     const [chat, chatSet] = useState<string[]>([])
@@ -83,8 +82,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     }, [authorizedMemberList])
 
-
-    const userInAuthorizedList = useMemo(() => {
+    const isUserInAuthorizedList = useMemo(() => {
         if (!authorizedMemberList) return false
 
         const userInAuthorizedList = authorizedMemberList[localUserId]
@@ -94,6 +92,10 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         return false
     }, [authorizedMemberList])
 
+    const [userWantsToScroll, userWantsToScrollSet] = useState(false)
+
+    const [refresher, refresherSet] = useState(false)
+
 
     //handle peer events
     const mounted = useRef(false)
@@ -101,28 +103,40 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         if (mounted.current) return
         mounted.current = true
 
-        peer.on("open", (peerId) => {
-            changeStudySessionsServObj(seenStudySession.id, localUserId, peerId, uuidV4())
+        console.log(`$ran opening useeffect`);
+
+        peer.on("open", () => {
+            updateAndReadMembers()
+        })
+
+        peer.on("close", () => {
+            disconnectConnections()
         })
 
         //receive the connections
         peer.on('connection', (conn) => {
-            peerConnectedSet(true)
+
+            conn.on('open', () => {
+                console.log(`$connection open - established to `, conn.peer);
+                connectToPeer(conn.peer)//relay received connection to send connections
+            });
 
             conn.on('data', (data) => {
                 chatSet(prevMessages => [...prevMessages, data as string])
             });
 
             conn.on('close', () => {
-                console.log(`$closed conn`);
+                console.log(`$seen a conn closed`, conn.peer);
+                sendConnections.current = sendConnections.current.filter(eachConnection => eachConnection.peer !== conn.peer)
+                refresherSet(prev => !prev)
             });
         });
 
-
-        serverPingLoop()
+        peer.on("error", (err) => {
+            console.log(`$peer err bounds`, err.message);
+        })
     }, [])
 
-    const [userWantsToScroll, userWantsToScrollSet] = useState(false)
 
     //snap chat on new message
     useEffect(() => {
@@ -132,100 +146,74 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     }, [chat, userWantsToScroll])
 
 
-    const serverLoopInterval = useRef<undefined | NodeJS.Timeout>(undefined)
-    const serverLoopTime = useRef(5000)
+    //all ways people can exit
+    //broswer close
+    //unmount
+    //disconnect button
 
-    const serverPingLoop = () => {
+    const handleUnload = (e: BeforeUnloadEvent) => {
+        // Cancel the event
+        e.preventDefault();
 
-        if (serverLoopInterval.current) {
-            clearInterval(serverLoopInterval.current)
-            serverLoopInterval.current = undefined
+        // Chrome requires returnValue to be set
+        e.returnValue = '';
+
+        // Display a confirmation dialog
+        let confirmationMessage = 'Are you sure you want to leave?';
+        (e || window.event).returnValue = confirmationMessage; // Standard for most browsers
+
+        if (window.confirm(confirmationMessage)) {
+            // Call your cleanup function here
+            disconnectConnections();
         }
 
-        serverLoopInterval.current = setInterval(async () => {
-
-            //ask server if any changess
-            const response = await readStudySessionsServObj(seenStudySession.id)
-            console.log(`$response`, response);
-
-            //changes happened do something
-            if (!response.studySessionInfo) return
-
-            if (response.studySessionInfo.version !== lastSavedVersionNumber.current) {
-
-                console.log(`$changes happened on server`);
-                lastSavedVersionNumber.current = response.studySessionInfo.version
-
-                const usersFromServer = response.studySessionInfo.members
-
-                //someone can join the session
-                const peerIdsNotSeenOnMyEnd: string[] = []//peer ids
-                Object.entries(usersFromServer).forEach(eachEntry => {
-                    if (!lastSavedPeerIdsSeen.current.includes(eachEntry[1].peerId) && eachEntry[0] !== localUserId) {
-                        peerIdsNotSeenOnMyEnd.push(eachEntry[1].peerId)
-                    }
-                })
-
-                //someone can leave the session
-                const peerIdsNotSeenOnServerEnd: string[] = []
-                lastSavedPeerIdsSeen.current.forEach(eachPeerId => {
-                    //user disconnected from server clear locally
-
-                    let foundInArr = false
-                    Object.entries(usersFromServer).forEach(eachEntry => {
-                        if (eachEntry[1].peerId === eachPeerId) {
-                            foundInArr = true
-                        }
-                    })
-
-                    if (!foundInArr) {
-                        peerIdsNotSeenOnServerEnd.push(eachPeerId)
-                    }
-                })
-
-
-
-
-
-
-
-                //connect to each peer
-                peerIdsNotSeenOnMyEnd.forEach(eachPeerId => {
-                    lastSavedPeerIdsSeen.current.push(eachPeerId)
-                    connectToPeer(eachPeerId)
-                })
-
-                //disconenct old peers
-                peerIdsNotSeenOnServerEnd.forEach(eachPeerId => {
-                    console.log(`$close connection for `, eachPeerId);
-
-                    sendConnections.current.forEach(eachConnection => {
-                        if (eachConnection.peer === eachPeerId) {
-                            eachConnection.close()
-                        }
-                    })
-                })
-
-
-
-
-                //handle room full, stop loop
-                if (response.studySessionInfo.roomFull !== roomFull) {
-
-                    if (response.studySessionInfo.roomFull) {
-                        serverLoopTime.current = 30000
-                        roomFullSet(true)
-                    } else {
-                        roomFullSet(false)
-                        serverLoopTime.current = 5000
-                    }
-
-                    serverPingLoop()
-                }
-            }
-
-        }, serverLoopTime.current)
+        return confirmationMessage; // For some older browsers
     }
+
+    useEffect(() => {
+        // Register the event listener for beforeunload
+        window.addEventListener('beforeunload', handleUnload);
+
+        // Clean up the event listener when the component is unmounted
+        return () => {
+            window.removeEventListener('beforeunload', handleUnload);
+            sendConnections.current.length > 0 && disconnectConnections()
+            // Additional cleanup logic if needed
+        };
+    }, []);
+
+
+
+
+
+
+    const updateAndReadMembers = async () => {
+        //write current info to server
+        await changeStudySessionsServObj(seenStudySession.id, localUserId, peer.id)
+
+        //check members
+        const response = await readStudySessionsServObj(seenStudySession.id)
+        console.log(`$response`, response);
+
+        if (!response.studySessionInfo) {
+            setTimeout(() => {
+                console.log(`$couldnt get response studysessinfo, trying again`);
+                updateAndReadMembers()
+            }, 5000)
+            return
+        }
+
+        const usersFromServer = response.studySessionInfo.members
+        console.log(`$reading latest members`, usersFromServer);
+
+        //connect to all other users seen
+        Object.entries(usersFromServer).forEach(eachEntry => {//user id - userObjwPeer
+            if (eachEntry[0] !== localUserId) {
+                connectToPeer(eachEntry[1].peerId)
+            }
+        })
+    }
+
     const sendMessage = () => {
         sendConnections.current.forEach(eachConnection => {
             eachConnection.send(currentMessage);
@@ -234,62 +222,63 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         chatSet(prevMessages => [...prevMessages, currentMessage])
         currentMessageSet("")
     }
-    const connectToPeer = (peerId: string) => {
-        sendConnections.current.push(peer.connect(peerId))
 
-        peerConnectedSet(true)
+    const connectToPeer = (peerId: string) => {
+
+        //only add to connArr if not there already
+        let seenInArr = false
+        sendConnections.current.forEach(eachConn => {
+            if (eachConn.peer === peerId) {
+                seenInArr = true
+            }
+        })
+
+        if (!seenInArr) sendConnections.current.push(peer.connect(peerId))
+        refresherSet(prev => !prev)
     }
-    const disconnectFromPeers = () => {
+
+    const disconnectConnections = () => {
+        console.log(`$ran disconnect connections`);
+
         sendConnections.current.forEach(eachConnection => {
             eachConnection.close()
         })
 
-        peerConnectedSet(false)
+        removeUserFromstudySessionsServObj(seenStudySession.id, localUserId)
+        // peer.disconnect()
+        sendConnections.current = []
+        refresherSet(prev => !prev)
     }
 
     return (
         <div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
-                {peerConnected && <p style={{ color: 'green' }}>Connected</p>}
-
-                {roomFull && <p>Room closed off</p>}
-            </div>
-
-
-            {peerConnected &&
+            {sendConnections.current.length > 0 && (
                 <div>
-                    <button onClick={disconnectFromPeers}>Disconnect</button>
-
-                    {userInAuthorizedList && userRole === ("host" || "coHost") && (
-                        <button onClick={() => {
-                            changeStudySessionsServObj(seenStudySession.id, localUserId, peer.id, uuidV4(), !roomFull)
-                        }}>{roomFull ? "Open Room" : "Close Room"}</button>
-                    )}
+                    <p style={{ color: "#0f0" }}>People online</p>
+                    <button onClick={disconnectConnections}>Disconnect</button>
                 </div>
-            }
+            )}
 
-            {peerConnected && (
-                <div style={{ backgroundColor: "#0f0" }}>
-                    <p>chat room</p>
+            <div style={{ backgroundColor: "#999", height: "60vh", display: "grid", gridTemplateRows: "5fr 1fr" }}>
+                <div ref={chatRef} style={{ display: "grid", gap: ".5rem", overflowY: "auto", gridAutoRows: "70px", padding: "1rem" }}
+                    onScroll={() => {
+                        const calcScrollTop = chatRef.current.scrollHeight - chatRef.current.clientHeight
+                        const isAtBottom = calcScrollTop > (chatRef.current.scrollTop - 10) && calcScrollTop < (chatRef.current.scrollTop + 10)
 
-                    <div ref={chatRef} style={{ display: "grid", gap: ".5rem", height: "60vh", overflowY: "auto", gridAutoRows: "70px" }}
-                        onScroll={() => {
-                            const calcScrollTop = chatRef.current.scrollHeight - chatRef.current.clientHeight
-                            const isAtBottom = calcScrollTop > (chatRef.current.scrollTop - 10) && calcScrollTop < (chatRef.current.scrollTop + 10)
+                        // Update state based on user scroll position
+                        userWantsToScrollSet(!isAtBottom);
+                    }}>
+                    {chat.map((eachMessage, eachMessageIndex) => {
+                        return <p style={{ backgroundColor: "#fff", color: "#000", padding: "1rem" }} key={eachMessageIndex}>{eachMessage}</p>
+                    })}
+                </div>
 
-                            // Update state based on user scroll position
-                            userWantsToScrollSet(!isAtBottom);
-                        }}>
-                        {chat.map((eachMessage, eachMessageIndex) => {
-                            return <p style={{ backgroundColor: "#fff", color: "#000", padding: "1rem" }} key={eachMessageIndex}>{eachMessage}</p>
-                        })}
-                    </div>
-
+                <div style={{ marginLeft: "1rem" }}>
                     <input value={currentMessage} onChange={(e) => { currentMessageSet(e.target.value) }} onKeyDown={(e) => { if (e.key === "Enter") sendMessage() }} type="text" placeholder="Enter your message" />
 
                     <button onClick={sendMessage}>Send Message</button>
                 </div>
-            )}
+            </div>
         </div>
     );
 }

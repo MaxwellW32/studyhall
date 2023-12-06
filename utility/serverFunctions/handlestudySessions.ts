@@ -87,19 +87,15 @@ const studySessionsServObj: {
             [key: string]: {
                 peerId: string
             }
-        },
-        version: string,
-        roomFull: boolean
+        }
     }
 } = {}
 
-export async function changeStudySessionsServObj(studySessionId: string, userId: string, peerId: string, versionStr: string, roomFull?: boolean) {
+export async function changeStudySessionsServObj(studySessionId: string, userId: string, peerId: string) {
 
     if (!studySessionsServObj[studySessionId]) {
         studySessionsServObj[studySessionId] = {
-            members: {},
-            version: uuidv4(),
-            roomFull: false
+            members: {}
         };
     }
 
@@ -112,12 +108,21 @@ export async function changeStudySessionsServObj(studySessionId: string, userId:
 
     // Update the peerId and version
     studySessionsServObj[studySessionId].members[userId].peerId = peerId;
-    studySessionsServObj[studySessionId].version = versionStr;
-    if (roomFull !== undefined) studySessionsServObj[studySessionId].roomFull = roomFull;
+    return { complete: "ye" }
 }
 
 export async function readStudySessionsServObj(studySessionId: string) {
     return { studySessionInfo: studySessionsServObj[studySessionId] }
+}
+
+export async function removeUserFromstudySessionsServObj(studySessionId: string, userId: string) {
+
+    if (!studySessionsServObj[studySessionId]) return
+
+    // Check if the member exists, if not, initialize it
+    if (!studySessionsServObj[studySessionId].members[userId]) return
+
+    delete studySessionsServObj[studySessionId].members[userId]
 }
 
 export async function getStudySessionMembers(studySessionId: string, seenLimit: number, seenOffset: number) {
