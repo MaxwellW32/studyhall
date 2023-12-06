@@ -11,18 +11,18 @@ import { changeStudySessionsServObj, readStudySessionsServObj } from '@/utility/
 import { wait } from '@/utility/useful/NiceFunctions';
 
 export default function StudySession({ seenStudySession, signedInUserId }: { seenStudySession: studySession, signedInUserId?: string }) {
-    // const [peer] = useState<Peer>(new Peer)
+    const [peer] = useState<Peer>(new Peer) //prod peer
 
-    const [peer] = useState<Peer>(() => {
+    // const [peer] = useState<Peer>(() => {
 
-        fetch(`/api/peer/peerServer`)
+    //     fetch(`/api/peer/peerServer`)
 
-        return new Peer(uuidV4(), {
-            host: "localhost",
-            port: 9000,
-            path: "/myPeerServer",
-        })
-    })
+    //     return new Peer(uuidV4(), {
+    //         host: "localhost",
+    //         port: 9000,
+    //         path: "/myPeerServer",
+    //     })
+    // })//dev peer
 
     const sendConnections = useRef<DataConnection[]>([])
 
