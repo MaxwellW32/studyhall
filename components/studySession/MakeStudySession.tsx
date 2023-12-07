@@ -10,8 +10,8 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
     const initialStudySessionObj: newStudySession = {
         name: "",
         authorizedMemberList: null,
-        allowAll: false,
-        isPublic: false
+        allowAll: true,
+        isPublic: true
     }
 
     const [studySessionObj, studySessionObjSet] = useState(oldStudySession ? { ...oldStudySession } : { ...initialStudySessionObj })
@@ -147,6 +147,8 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
 
                             return newUsersColl
                         })
+
+                        currentUserSearchSet("")
                     }}>Add</button>
                 </div>
             )}

@@ -26,6 +26,10 @@ export default async function page() {
                 <button>New Study Session</button>
             </Link>
 
+            <ShowMore title='Search Sessions' titleStyles={{ fontSize: "1.3rem", fontWeight: "bold" }} startOpened={true}>
+                <HandleSearch />
+            </ShowMore>
+
             {userStudySessionsMade !== undefined && (
                 <ShowMore title='Study Sessions Created By You' titleStyles={{ fontSize: "1.3rem", fontWeight: "bold" }} startOpened={true}>
 
@@ -46,10 +50,6 @@ export default async function page() {
                     })}
                 </ShowMore>
             )}
-
-            <ShowMore title='Search Sessions' titleStyles={{ fontSize: "1.3rem", fontWeight: "bold" }}>
-                <HandleSearch />
-            </ShowMore>
 
             {publicStudySessions.length > 0 && (
                 <div style={{ backgroundColor: "#444", padding: "1rem" }}>

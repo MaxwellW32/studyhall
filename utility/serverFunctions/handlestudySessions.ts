@@ -97,7 +97,7 @@ export async function addStudySession(seenStudySession: newStudySession) {
 
 export async function updateStudySession(seenStudySession: Omit<studySession, "userId" | "createdAt">) {
 
-    studySessionSchema.omit({ userId: true }).parse(seenStudySession)
+    studySessionSchema.omit({ userId: true, createdAt: true }).parse(seenStudySession)
 
     const validateSeenSession = await getSpecificStudySession(seenStudySession.id)
     if (!validateSeenSession) throw new Error("Couldn't validate")

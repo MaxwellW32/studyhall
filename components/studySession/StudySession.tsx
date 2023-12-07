@@ -67,6 +67,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     })
 
     const userRole = useMemo<"host" | "coHost" | "normal">(() => {
+        //no list everyone is normal except host
         if (!authorizedMemberList) {
             if (signedInUserId && signedInUserId === seenStudySession.userId) {
                 return "host"
@@ -75,8 +76,14 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
             }
         }
 
+        //user exists on list - give em the role they want
         if (authorizedMemberList[localUserId] !== undefined) {
             return authorizedMemberList[localUserId].role
+        }
+
+        //host was not specific on auth list - give host
+        if (signedInUserId === seenStudySession.userId && authorizedMemberList[seenStudySession.userId] === undefined) {
+            return "host"
         }
 
         return "normal"

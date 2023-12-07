@@ -1,7 +1,7 @@
 import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, timestamp, primaryKey, varchar, text, date, int, datetime, longtext, PrimaryKey, bigint, uniqueIndex, boolean } from "drizzle-orm/mysql-core"
 import { relations } from 'drizzle-orm';
-import type { AdapterAccount } from "@auth/core/adapters"
 
+//gotta delete related databse records on deletion
 
 
 export const users = mysqlTable("users", {

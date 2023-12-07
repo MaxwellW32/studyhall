@@ -3,7 +3,7 @@
 import { updateUserType, user, userSchema } from "@/types";
 import { users } from "@/db/schema"
 import { drizzle } from "drizzle-orm/planetscale-serverless"
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 import { usableDb } from "@/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
@@ -26,7 +26,7 @@ export async function getSpecificUser(seenStr: string, option: "id" | "username"
 
     } else if (option === "username") {
         const user = await usableDb.query.users.findFirst({
-            where: eq(users.username, seenStr),
+            where: like(users.username, `%${seenStr}%`),
         });
 
         return user
