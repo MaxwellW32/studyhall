@@ -61,7 +61,13 @@ export type authorizedMemberList = {
 
 
 
-
+//each type can have a read - full object expected
+//a new - whats needed to provide new
+//an update - all needed to update
+// educationLevel: varchar("education_level", { length: 255 }),
+// fieldOfStudy: varchar("field_of_study", { length: 255 }),
+// country: varchar("country", { length: 255 }),
+// interests: text("interests"),
 
 export const userSchema = z.object({
     id: z.string().min(1),
@@ -72,6 +78,10 @@ export const userSchema = z.object({
     name: z.string().min(1).nullable(),
     emailVerified: z.date().nullable(),
     image: z.string().min(1).nullable(),
+    educationLevel: z.string().min(1).nullable(),
+    fieldOfStudy: z.string().min(1).nullable(),
+    country: z.string().min(1).nullable(),
+    interests: z.string().min(1).nullable(),
 })
 
 export type user = z.infer<typeof userSchema> & {

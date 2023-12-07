@@ -116,6 +116,9 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     const remoteVideosCont = useRef<HTMLDivElement>(null!);
 
+    const [viewMode, viewModeSet] = useState<"chatMode" | "videoMode" | "videoModeSmall">("chatMode")
+
+
     //handle peer events
     const mounted = useRef(false)
     useEffect(() => {

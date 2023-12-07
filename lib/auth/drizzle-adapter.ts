@@ -13,7 +13,11 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
         emailVerified: userData.emailVerified,
         name: userData.name,
         image: userData.image,
-        username: `new${uuidv4()}`
+        username: `new${uuidv4()}`,
+        educationLevel: null,
+        fieldOfStudy: null,
+        country: null,
+        interests: null
       });
       const rows = await db
         .select()

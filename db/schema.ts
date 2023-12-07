@@ -13,6 +13,10 @@ export const users = mysqlTable("users", {
     username: varchar("username", { length: 255 }).notNull().unique(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
+    educationLevel: varchar("education_level", { length: 255 }),
+    fieldOfStudy: varchar("field_of_study", { length: 255 }),
+    country: varchar("country", { length: 255 }),
+    interests: text("interests"),
 },
     (table) => {
         return {

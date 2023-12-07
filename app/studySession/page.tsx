@@ -26,7 +26,7 @@ export default async function page() {
                 <button>New Study Session</button>
             </Link>
 
-            <ShowMore title='Search Sessions' titleStyles={{ fontSize: "1.3rem", fontWeight: "bold" }} startOpened={true}>
+            <ShowMore title='Search Sessions' titleStyles={{ fontSize: "1.3rem", fontWeight: "bold" }}>
                 <HandleSearch />
             </ShowMore>
 
