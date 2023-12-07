@@ -1,5 +1,5 @@
 import { studySession } from "@/types";
-import { getSpecificStudySession } from "@/utility/serverFunctions/handlestudySessions";
+import { getSpecificStudySession, joinStudySession } from "@/utility/serverFunctions/handlestudySessions";
 import StudySession from "@/components/studySession/StudySession";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
@@ -31,6 +31,11 @@ export default async function Page({ params }: { params: { studySessionId: strin
                 return <p>Not allowed to join this study session</p>
             }
         }
+    }
+
+    if (session) {
+        //join study session
+        joinStudySession(foundStudySession.id)
     }
 
     return <StudySession seenStudySession={foundStudySession} signedInUserId={session ? session.user.id : undefined} />

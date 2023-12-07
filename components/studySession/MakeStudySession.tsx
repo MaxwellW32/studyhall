@@ -10,7 +10,8 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
     const initialStudySessionObj: newStudySession = {
         name: "",
         authorizedMemberList: null,
-        allowAll: false
+        allowAll: false,
+        isPublic: false
     }
 
     const [studySessionObj, studySessionObjSet] = useState(oldStudySession ? { ...oldStudySession } : { ...initialStudySessionObj })
@@ -52,6 +53,7 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
                 allowAll: localStudySessionObj.allowAll,
                 id: (localStudySessionObj as studySession).id,
                 name: localStudySessionObj.name,
+                isPublic: localStudySessionObj.isPublic
             })
 
         } else {
@@ -108,6 +110,16 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
                     return newObj
                 })
             }}>{studySessionObj.allowAll.toString()}</button>
+
+            <label>Is Study Session Public?</label>
+            <button onClick={() => {
+                studySessionObjSet((prevObj) => {
+                    const newObj = { ...prevObj }
+                    newObj.isPublic = !newObj.isPublic
+                    return newObj
+                })
+            }}>{studySessionObj.isPublic.toString()}</button>
+
 
 
 

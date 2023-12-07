@@ -34,14 +34,16 @@ export const studySessionSchema = z.object({
     userId: z.string().min(1),
     name: z.string().min(1),
     authorizedMemberList: z.string().min(1).nullable(),//asigns roles only
-    allowAll: z.boolean()
+    allowAll: z.boolean(),
+    isPublic: z.boolean(),
+    createdAt: z.date()
 })
 export type studySession = z.infer<typeof studySessionSchema> & {
     createdBy?: user,
     posts?: post[],
     members?: user[],
 }
-export type newStudySession = Pick<studySession, "name" | "authorizedMemberList" | "allowAll">
+export type newStudySession = Omit<studySession, "id" | "userId" | "createdAt">
 
 export type authorizedMemberListRoles = "host" | "coHost" | "normal"
 export type authorizedMemberList = {
@@ -75,6 +77,7 @@ export const userSchema = z.object({
 export type user = z.infer<typeof userSchema> & {
     posts?: post[],
     communitiesMade?: community[],
+
     studySessionsMade?: studySession[],
     communitiesJoined?: community[],
     studySessionsJoined?: studySession[],

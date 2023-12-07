@@ -73,9 +73,16 @@ export default function App() {
 
   return (
     <main style={{ padding: !screenSize.phone ? "0rem 1rem 5rem 1rem" : "", display: "grid" }}>
-      <button style={{ justifySelf: "flex-end", margin: "1rem" }} onClick={() => router.push("/newCommunity")}>
-        Add a community
-      </button>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", padding: "1rem" }}>
+        <button style={{}} onClick={() => router.push("/studySession")}>
+          Study Sessions
+        </button>
+
+        <button style={{}} onClick={() => router.push("/newCommunity")}>
+          Add a community
+        </button>
+      </div>
 
       {communityData?.pages &&
         <div style={{ display: "grid", gap: "3rem" }}>

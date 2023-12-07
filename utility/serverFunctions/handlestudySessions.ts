@@ -1,14 +1,13 @@
 "use server"
 
-import { newStudySession, studySession, studySessionSchema } from "@/types";
-import { studySessions, usersToStudySessions } from "@/db/schema"
-import { eq, desc, asc, sql } from "drizzle-orm";
+import { newStudySession, studySession, studySessionSchema, user } from "@/types";
+import { studySessions, usersToStudySessions, users } from "@/db/schema"
+import { eq, desc, asc, sql, ilike, like } from "drizzle-orm";
 import { usableDb } from "@/db";
 import { authOptions } from '@/lib/auth/auth-options'
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid"
 import { redirect } from "next/navigation";
-
 
 export async function getAllStudySessions(seenLimit: number, seenOffset: number) {
 
@@ -29,6 +28,54 @@ export async function getSpecificStudySession(seenStudySessionId: string): Promi
     return result
 }
 
+export async function getStudySessionByName(name: string, seenLimit: number, seenOffset: number): Promise<studySession[]> {
+    const result = await usableDb.query.studySessions.findMany({
+        where: like(studySessions.name, `%${name}%`),
+        limit: seenLimit,
+        offset: seenOffset
+    });
+
+    return result
+}
+
+
+export async function getPublicStudySessions(seenLimit: number = 50, seenOffset: number = 0): Promise<studySession[]> {
+
+    const result = await usableDb.query.studySessions.findMany({
+        where: eq(studySessions.isPublic, true),
+        limit: seenLimit,
+        offset: seenOffset,
+        orderBy: [desc(studySessions.createdAt)],
+    });
+
+    return result
+}
+
+
+export async function getUserStudySessionsMade(userId: string): Promise<studySession[] | undefined> {
+
+    const result = await usableDb.query.users.findFirst({
+        where: eq(users.id, userId),
+        with: {
+            studySessionsMade: true
+        }
+    });
+
+    return result ? result.studySessionsMade : undefined
+}
+
+export async function getUserStudySessionsJoined(userId: string): Promise<studySession[]> {
+
+    const result = await usableDb.query.usersToStudySessions.findMany({
+        where: eq(usersToStudySessions.userId, userId),
+        with: {
+            studySession: true
+        }
+    });
+
+    return result.map(eachResult => eachResult.studySession)
+}
+
 export async function addStudySession(seenStudySession: newStudySession) {
     const session = await getServerSession(authOptions)
     if (!session) throw new Error("No session")
@@ -37,7 +84,8 @@ export async function addStudySession(seenStudySession: newStudySession) {
     const finalStudySession: studySession = {
         ...seenStudySession,
         id: newId,
-        userId: session.user.id
+        userId: session.user.id,
+        createdAt: new Date()
     }
 
     studySessionSchema.parse(finalStudySession)
@@ -69,6 +117,26 @@ export async function updateStudySession(seenStudySession: Omit<studySession, "u
 
     redirect(`/studySession/${seenStudySession.id}`)
 
+}
+
+export async function joinStudySession(studySessionId: string) {
+
+    const session = await getServerSession(authOptions)
+    if (!session) throw new Error("No session")
+
+    //check if in already
+    const result = await usableDb.query.usersToStudySessions.findFirst({
+        where: eq(usersToStudySessions.userId, session.user.id)
+    })
+
+    if (result) return { message: "already joined study session" }
+
+    await usableDb.insert(usersToStudySessions).values({
+        studySessionId: studySessionId,
+        userId: session.user.id
+    });
+
+    return { message: "joined study session successfully" }
 }
 
 export async function deleteStudySession(seenStudySession: Pick<studySession, "id">) {

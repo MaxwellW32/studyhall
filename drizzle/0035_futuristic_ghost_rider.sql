@@ -1,0 +1,1 @@
+ALTER TABLE `studysessions` ADD `created_at` timestamp DEFAULT (now()) NOT NULL;

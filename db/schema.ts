@@ -25,9 +25,12 @@ export const users = mysqlTable("users", {
 export const usersRelations = relations(users, ({ many }) => ({
     posts: many(posts),
     communitiesMade: many(communities),
+
     studySessionsMade: many(studySessions),
     communitiesJoined: many(usersToCommunities),
+
     studySessionsJoined: many(usersToStudySessions),
+
     comments: many(comments),
 
     likedPosts: many(usersToLikedPosts),
@@ -157,7 +160,15 @@ export const studySessions = mysqlTable("studysessions", {
     name: varchar("name", { length: 255 }).notNull(),
     authorizedMemberList: text("authorized_member_list"),
     allowAll: boolean("allow_all").notNull().default(false),
-});
+    isPublic: boolean("is_public").notNull().default(false),
+    createdAt: timestamp('created_at').notNull().defaultNow()
+},
+    (table) => {
+        return {
+            userIdIdx: index("user_id_index").on(table.userId),
+            nameIdx: index("name_index").on(table.name),
+        }
+    });
 
 export const studySessionsRelations = relations(studySessions, ({ one, many }) => ({
     createdBy: one(users, {
@@ -377,7 +388,8 @@ export const usersToStudySessions = mysqlTable('users_to_study_sessions', {
 },
     (table) => {
         return {
-            pk: primaryKey({ columns: [table.userId, table.studySessionId] })
+            pk: primaryKey({ columns: [table.userId, table.studySessionId] }),
+            studySessionIdIdx: index("study_session_id_index").on(table.studySessionId),
         }
     });
 
