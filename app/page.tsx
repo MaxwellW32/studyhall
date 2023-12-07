@@ -109,7 +109,7 @@ export default function App() {
         {/* //hidden button to reload */}
         <div style={{ translate: "0px -400px", opacity: 0, userSelect: "none", pointerEvents: "none" }} ref={ref}></div>
 
-        {!communityHasNextPage && <h3 style={{ textAlign: "center", padding: "1rem" }}>Need more communities 😅</h3>}
+        {!communityHasNextPage && <h3 style={{ textAlign: "center", padding: "1rem", color: "#000" }}>Need more communities 😅</h3>}
       </>
     </main>
   )

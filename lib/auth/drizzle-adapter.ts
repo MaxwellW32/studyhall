@@ -19,12 +19,14 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
         country: null,
         interests: null
       });
+
       const rows = await db
         .select()
         .from(users)
         .where(eq(users.email, userData.email))
         .limit(1);
       const row = rows[0];
+
       if (!row) throw new Error('User not found');
       return row;
     },
