@@ -4,7 +4,7 @@ import { authorizedMemberList, studySession, user } from '@/types'
 import styles from "./page.module.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Peer } from "peerjs";
-import type { DataConnection } from "peerjs";
+import type { DataConnection, MediaConnection } from "peerjs";
 import { v4 as uuidV4 } from "uuid"
 import { retreiveFromLocalStorage, saveToLocalStorage } from '@/utility/savestorage';
 import { changeStudySessionsServObj, readStudySessionsServObj, removeUserFromstudySessionsServObj } from '@/utility/serverFunctions/handlestudySessions';
@@ -100,9 +100,12 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     const localStream = useRef<null | MediaStream>(null);
     const remoteStream = useRef<null | MediaStream>(null);
 
+    const callRef = useRef<null | MediaConnection>(null);
+
     const remoteVideosRef = useRef<HTMLVideoElement[]>([]);
 
     const myVideoRef = useRef<HTMLVideoElement>(null!);
+    const [myVideoConnected, myVideoConnectedSet] = useState(false)
 
     const remoteVideosCont = useRef<HTMLDivElement>(null!);
 
@@ -143,6 +146,8 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
         //handle video calls
         peer.on("call", (call) => {
+            callRef.current = call
+
             console.log(`$seeing someone calling`);
             const newVid = document.createElement("video")
 
@@ -162,11 +167,8 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
             call.on("close", () => {
                 newVid.remove()
+                console.log(`$seen a vid close receive`);
             })
-
-            // call.on("close", () => {
-            //     newVid.remove()
-            // })
         })
 
         peer.on("error", (err) => {
@@ -261,6 +263,15 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         refresherSet(prev => !prev)
     }
 
+    const disconnectVideo = () => {
+        callRef.current?.close()
+
+        localStream.current?.getTracks().forEach(function (track) {
+            track.stop();
+        });
+        myVideoConnectedSet(false)
+    }
+
     const handleUnload = (e: BeforeUnloadEvent) => {
         // Cancel the event
         e.preventDefault();
@@ -298,6 +309,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     const callNewUser = (userId: string, stream: MediaStream) => {
         const call = peer.call(userId, stream);
+        callRef.current = call
 
         const newVid = document.createElement("video")
 
@@ -307,6 +319,8 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
         call.on("close", () => {
             newVid.remove()
+
+            console.log(`$seen a vid close send`);
         })
     }
 
@@ -316,6 +330,8 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         video.addEventListener("loadedmetadata", () => {
             video.play()
         })
+
+        myVideoConnectedSet(true)
     }
 
     const addRemoteVideoStream = (video: HTMLVideoElement, stream: MediaStream) => {
@@ -366,9 +382,11 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
                 </div>
             </div>
 
+            {myVideoConnected && <button onClick={disconnectVideo}>Close Video</button>}
+
             <div>
                 <p>My Cam</p>
-                <video style={{ aspectRatio: "19/6", width: "300px" }} ref={myVideoRef}></video>
+                <video style={{ display: myVideoConnected ? "block" : "none", aspectRatio: "19/6", width: "300px" }} ref={myVideoRef}></video>
 
                 <p>Remote videos</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, 300px)" }} ref={remoteVideosCont}>
