@@ -53,7 +53,7 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
                 allowAll: localStudySessionObj.allowAll,
                 id: (localStudySessionObj as studySession).id,
                 name: localStudySessionObj.name,
-                isPublic: localStudySessionObj.isPublic
+                isPublic: localStudySessionObj.isPublic,
             })
 
         } else {
@@ -88,7 +88,7 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
     return (
         <div style={{ display: "grid" }}>
 
-            {oldStudySession ? <p>Update study session</p> : <p>create a new study session</p>}
+            {oldStudySession ? <h3>Update study session</h3> : <h3>create a new study session</h3>}
 
             <label htmlFor='studySession'>StudySession Name</label>
             <input id='studySession' value={studySessionObj.name}
@@ -102,7 +102,7 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
                 placeholder='Enter a name you like'
             />
 
-            <label>Open Study Session To Everyone?</label>
+            <label>Anyone can join?</label>
             <button onClick={() => {
                 studySessionObjSet((prevObj) => {
                     const newObj = { ...prevObj }
@@ -111,7 +111,7 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
                 })
             }}>{studySessionObj.allowAll.toString()}</button>
 
-            <label>Is Study Session Public?</label>
+            <label>List Publicly?</label>
             <button onClick={() => {
                 studySessionObjSet((prevObj) => {
                     const newObj = { ...prevObj }

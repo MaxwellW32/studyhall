@@ -95,7 +95,7 @@ export async function addStudySession(seenStudySession: newStudySession) {
     redirect(`/studySession/${newId}`)
 }
 
-export async function updateStudySession(seenStudySession: Omit<studySession, "userId">) {
+export async function updateStudySession(seenStudySession: Omit<studySession, "userId" | "createdAt">) {
 
     studySessionSchema.omit({ userId: true }).parse(seenStudySession)
 
@@ -116,7 +116,6 @@ export async function updateStudySession(seenStudySession: Omit<studySession, "u
         .where(eq(studySessions.id, seenStudySession.id));
 
     redirect(`/studySession/${seenStudySession.id}`)
-
 }
 
 export async function joinStudySession(studySessionId: string) {

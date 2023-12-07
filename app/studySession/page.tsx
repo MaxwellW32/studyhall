@@ -5,6 +5,7 @@ import HandleSearch from '@/utility/useful/HandleSearch'
 import NiceStudySessionDisplay from '@/utility/useful/NiceStudySessionDisplay'
 import ShowMore from '@/utility/useful/ShowMore'
 import { getServerSession } from 'next-auth'
+import Link from 'next/link'
 
 
 export default async function page() {
@@ -21,8 +22,13 @@ export default async function page() {
 
     return (
         <div style={{ backgroundColor: "#eee", display: "flex", gap: "1rem", flexDirection: "column" }}>
+            <Link href={`/newStudySession`} style={{ margin: "1rem 1rem 0rem auto" }}>
+                <button>New Study Session</button>
+            </Link>
+
             {userStudySessionsMade !== undefined && (
                 <ShowMore title='Study Sessions Created By You' titleStyles={{ fontSize: "1.3rem", fontWeight: "bold" }} startOpened={true}>
+
                     {userStudySessionsMade.map(eachSession => {
                         return (
                             <NiceStudySessionDisplay key={eachSession.id} seenStudySession={eachSession} />

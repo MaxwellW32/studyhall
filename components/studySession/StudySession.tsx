@@ -11,6 +11,7 @@ import { changeStudySessionsServObj, readStudySessionsServObj, removeUserFromstu
 import { wait } from '@/utility/useful/NiceFunctions';
 import { toast } from 'react-hot-toast';
 import { inProduction } from '@/utility/globalState';
+import Link from 'next/link';
 
 export default function StudySession({ seenStudySession, signedInUserId }: { seenStudySession: studySession, signedInUserId?: string }) {
     const [peer] = useState<Peer>(() => {
@@ -326,7 +327,13 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     }
 
     return (
-        <div>
+        <div style={{ display: "grid" }}>
+            {userRole === ("host" || "coHost") && (
+                <Link href={`/newStudySession/edit/${seenStudySession.id}`} style={{ justifySelf: "flex-end" }}>
+                    <button>Edit Study Session</button>
+                </Link>
+            )}
+
             {sendConnections.current.length > 0 && (
                 <div>
                     <p style={{ color: "#0f0" }}>{sendConnections.current.length} {sendConnections.current.length === 1 ? "other person" : "People"} online</p>
