@@ -125,11 +125,18 @@ export async function joinStudySession(studySessionId: string) {
     if (!session) throw new Error("No session")
 
     //check if in already
-    const result = await usableDb.query.usersToStudySessions.findFirst({
-        where: eq(usersToStudySessions.userId, session.user.id)
+    const results = await usableDb.query.usersToStudySessions.findMany({
+        where: eq(usersToStudySessions.studySessionId, studySessionId)
     })
 
-    if (result) return { message: "already joined study session" }
+    let founfinArr = false
+    results.forEach(eachResult => {
+        if (eachResult.userId === session.user.id) {
+            founfinArr = true
+        }
+    })
+
+    if (founfinArr) return { message: "already joined study session" }
 
     await usableDb.insert(usersToStudySessions).values({
         studySessionId: studySessionId,
