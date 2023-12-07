@@ -21,7 +21,7 @@ export default async function page() {
     }
 
     return (
-        <div style={{ backgroundColor: "#eee", display: "flex", gap: "1rem", flexDirection: "column" }}>
+        <div style={{ backgroundColor: "#333", display: "flex", gap: "1rem", flexDirection: "column" }}>
             <Link href={`/newStudySession`} style={{ margin: "1rem 1rem 0rem auto" }}>
                 <button>New Study Session</button>
             </Link>

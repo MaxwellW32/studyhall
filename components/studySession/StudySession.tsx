@@ -160,6 +160,10 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
                 addRemoteVideoStream(newVid, userVideoStream)
             })
 
+            call.on("close", () => {
+                newVid.remove()
+            })
+
             // call.on("close", () => {
             //     newVid.remove()
             // })
@@ -363,10 +367,11 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
             </div>
 
             <div>
+                <p>My Cam</p>
                 <video style={{ aspectRatio: "19/6", width: "300px" }} ref={myVideoRef}></video>
 
+                <p>Remote videos</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, 300px)" }} ref={remoteVideosCont}>
-                    <p>Remote videos</p>
                 </div>
             </div>
 
