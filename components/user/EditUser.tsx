@@ -10,14 +10,18 @@ export default function EditUser({ seenUser }: { seenUser: user }) {
     const initialUserObj: updateUserType = {
         image: seenUser.image,
         name: seenUser.name,
-        username: seenUser.username
+        username: seenUser.username,
+        country: seenUser.country,
+        educationLevel: seenUser.educationLevel,
+        fieldOfStudy: seenUser.fieldOfStudy,
+        interests: seenUser.interests
     }
 
     const [userObj, userObjSet] = useState({ ...initialUserObj })
 
+    const [usableInterests, usableInterestsSet] = useState<string[] | null>(initialUserObj.interests ? JSON.parse(initialUserObj.interests) : null)
 
     const submit = async () => {
-
         try {
             await updateUser(userObj)
         } catch (error) {
@@ -35,9 +39,9 @@ export default function EditUser({ seenUser }: { seenUser: user }) {
             <div style={{ display: "grid" }}>
                 <label>Name</label>
                 <input type="text" value={userObj.name ?? ""} onChange={(e) => {
-                    userObjSet(prevUSerObj => {
-                        prevUSerObj.name = e.target.value
-                        return { ...prevUSerObj }
+                    userObjSet(prevUserObj => {
+                        prevUserObj.name = e.target.value
+                        return { ...prevUserObj }
                     })
                 }} />
 
@@ -63,24 +67,55 @@ export default function EditUser({ seenUser }: { seenUser: user }) {
                         }
                     }, 1500)
 
-                    userObjSet(prevUSerObj => {
-                        prevUSerObj.username = e.target.value
-                        return { ...prevUSerObj }
+                    userObjSet(prevUserObj => {
+                        prevUserObj.username = e.target.value
+                        return { ...prevUserObj }
                     })
-                }} />
+                }} placeholder="Enter a username" />
 
                 <label>Image</label>
                 <div style={{ display: "grid", gridTemplateColumns: "20fr 1fr", alignItems: "center", gap: "1rem" }}>
                     <input type="text" value={userObj.image ?? ""} onChange={(e) => {
-                        userObjSet(prevUSerObj => {
-                            prevUSerObj.image = e.target.value
-                            return { ...prevUSerObj }
+                        userObjSet(prevUserObj => {
+                            prevUserObj.image = e.target.value
+                            return { ...prevUserObj }
                         })
                     }} placeholder="Please enter an image link" />
 
                     {userObj.image && <img src={userObj.image} alt="ShowImageExample" />}
                 </div>
 
+                <label>Country</label>
+                <input type="text" value={userObj.country ?? ""} onChange={(e) => {
+                    userObjSet(prevUserObj => {
+                        prevUserObj.country = e.target.value
+                        return { ...prevUserObj }
+                    })
+                }} placeholder="where are your representing?" />
+
+                <label>Education Level</label>
+                <input type="text" value={userObj.educationLevel ?? ""} onChange={(e) => {
+                    userObjSet(prevUserObj => {
+                        prevUserObj.educationLevel = e.target.value
+                        return { ...prevUserObj }
+                    })
+                }} placeholder="what is your education level?" />
+
+                <label>Field Of Study</label>
+                <input type="text" value={userObj.fieldOfStudy ?? ""} onChange={(e) => {
+                    userObjSet(prevUserObj => {
+                        prevUserObj.fieldOfStudy = e.target.value
+                        return { ...prevUserObj }
+                    })
+                }} placeholder="what is your field of study/major?" />
+
+                <label>Interests</label>
+                <input type="text" value={userObj.interests ?? ""} onChange={(e) => {
+                    userObjSet(prevUserObj => {
+                        prevUserObj.interests = e.target.value
+                        return { ...prevUserObj }
+                    })
+                }} placeholder="what are your interests?" />
             </div>
 
             <button disabled={userNameErr} style={{ backgroundColor: userNameErr ? "red" : "", margin: "1rem" }} onClick={submit}>Submit</button>

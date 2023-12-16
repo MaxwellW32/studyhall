@@ -100,7 +100,9 @@ export type user = z.infer<typeof userSchema> & {
     replies?: reply[]
 }
 
-export type updateUserType = Pick<user, "name" | "username" | "image">
+export type updateUserType = Omit<user, "id" | "email" | "createdAt" | "updatedAt" | "emailVerified">
+
+
 
 
 

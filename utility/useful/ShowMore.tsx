@@ -6,7 +6,7 @@ export default function ShowMore({ title, children, startOpened, headingStyles, 
     const [showing, showingSet] = useState(startOpened ? true : false)
 
     return (
-        <div>
+        <div style={{ color: "#fff" }}>
             <div className="dimOnMouse" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", backgroundColor: "#aaa", padding: "1rem", cursor: "pointer", ...headingStyles, }} onClick={() => { showingSet(prev => !prev) }}>
                 <p style={{ ...titleStyles }} >{title}</p>
 

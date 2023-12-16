@@ -144,7 +144,7 @@ export async function updatePost(seenPost: post) {
 
 export async function deletePost(seenPostId: string) {
 
-    postSchema.pick({ id: true }).parse(seenPostId)
+    postSchema.pick({ id: true }).parse({id: seenPostId})
 
 
 

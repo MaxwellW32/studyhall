@@ -21,7 +21,7 @@ export default async function page() {
     }
 
     return (
-        <div style={{ backgroundColor: "#333", display: "flex", gap: "1rem", flexDirection: "column" }}>
+        <div style={{ display: "flex", gap: "1rem", flexDirection: "column" }}>
             <Link href={`/newStudySession`} style={{ margin: "1rem 1rem 0rem auto" }}>
                 <button>New Study Session</button>
             </Link>
@@ -53,7 +53,7 @@ export default async function page() {
 
             {publicStudySessions.length > 0 && (
                 <div style={{ backgroundColor: "#444", padding: "1rem" }}>
-                    <h3>Public Study Sessions</h3>
+                    <h3 style={{ color: "#fff" }}>Public Study Sessions</h3>
 
                     <div style={{ display: "grid", gap: "1rem", padding: "1rem" }}>
                         {publicStudySessions.map(eachSession => {

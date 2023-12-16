@@ -156,8 +156,8 @@ export default function Community({ seenCommunity, fullScreen = true }: { seenCo
   if (communityData === undefined) return <p>Not seeing community</p>
 
   return (
-    <div className={styles.communityMainDiv} style={{ borderRadius: "2rem", display: "grid", padding: !screenSize.phone ? "1rem" : "" }}>
-      {communityData && !fullScreen && <Link style={{ margin: screenSize.phone ? "1rem" : "" }} className='showUnderline' href={getNiceUrl("community", communityData.id, communityData.name)}>sh/{communityData.name}</Link>}
+    <div className={styles.communityMainDiv} style={{ borderRadius: "2rem", display: "grid", padding: !screenSize.phone ? "1rem" : "1rem 0rem 0rem 0rem" }}>
+      {communityData && !fullScreen && <Link style={{ margin: screenSize.phone ? "0rem 1rem 1rem 1rem" : "0rem 1rem 1rem 0rem", fontWeight: "bold" }} className='showUnderline' href={getNiceUrl("community", communityData.id, communityData.name)}>sh/{communityData.name}</Link>}
 
       {fullScreen &&
         <div style={{ backgroundColor: "#888", padding: "1rem", display: "grid", marginBottom: "2rem", position: "relative" }}>

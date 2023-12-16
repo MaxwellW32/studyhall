@@ -7,6 +7,8 @@ import SessionProvider from "@/components/home/SessionProvider"
 import { authOptions } from '@/lib/auth/auth-options'
 import { getSpecificUser } from '@/utility/serverFunctions/handleUsers'
 import AtomLoader from '@/components/home/AtomLoader'
+import ThemeProvider from '@/utility/ThemeProvider'
+import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: 'Study Hall',
@@ -18,15 +20,16 @@ export default async function RootLayout({ children, }: { children: React.ReactN
 
   return (
     <html lang="en">
-      <body>
+      <ThemeProvider>
         <SessionProvider session={session}>
           <QueryWrapper>
+            <Toaster position="top-center" reverseOrder={false} />
             <AtomLoader />
             <NavBar seenUser={session ? await getSpecificUser(session.user.id, "id") : undefined} />
             {children}
           </QueryWrapper>
         </SessionProvider>
-      </body>
+      </ThemeProvider>
     </html>
   )
 }

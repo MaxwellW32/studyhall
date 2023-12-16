@@ -5,7 +5,7 @@ import { useLayoutEffect } from 'react';
 export const screenSizeGlobal = atom<{
     desktop: boolean
     tablet: boolean,
-    phone: boolean,
+    phone: boolean
 }>({
     desktop: false,
     tablet: false,
@@ -17,27 +17,53 @@ export default function AtomLoader() {
 
     const findScreenSize = () => {
         // const matchPhone = window.matchMedia("(max-width: 768px)")
+        let localDesktop = false
+        let localTablet = false
+        let localPhone = false
+
+
+        if (window.innerWidth > 1023) {
+            localDesktop = true
+        } else if (window.innerWidth > 500) {
+            localTablet = true
+        } else {
+            localPhone = true
+        }
+
+        let prevScreenSize = {
+            desktop: false,
+            tablet: false,
+            phone: false
+        }
 
         screenSizeSet(prev => {
-            prev.desktop = false
-            prev.tablet = false
-            prev.phone = false
+            prevScreenSize = prev
 
-            return { ...prev }
+            return prev
         })
 
-        if (window.innerWidth > 1024) {
+        if (localDesktop && !prevScreenSize.desktop) {
             screenSizeSet(prev => {
+                prev = { desktop: false, tablet: false, phone: false }
+
                 prev.desktop = true
                 return { ...prev }
             })
-        } else if (window.innerWidth > 768) {
+        }
+
+        if (localTablet && !prevScreenSize.tablet) {
             screenSizeSet(prev => {
+                prev = { desktop: false, tablet: false, phone: false }
+
                 prev.tablet = true
                 return { ...prev }
             })
-        } else {
+        }
+
+        if (localPhone && !prevScreenSize.phone) {
             screenSizeSet(prev => {
+                prev = { desktop: false, tablet: false, phone: false }
+
                 prev.phone = true
                 return { ...prev }
             })
@@ -55,3 +81,6 @@ export default function AtomLoader() {
 
     return null
 }
+
+
+

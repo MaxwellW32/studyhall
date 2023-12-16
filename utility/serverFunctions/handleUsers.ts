@@ -50,7 +50,7 @@ export async function getPostUser(postUserId: string) {
 
 export async function updateUser(seenUser: updateUserType) {
 
-    userSchema.pick({ name: true, username: true, image: true }).parse(seenUser)
+    userSchema.omit({ id: true, email: true, createdAt: true, updatedAt: true, emailVerified: true }).parse(seenUser)
 
     const session = await getServerSession(authOptions)
     if (!session) throw new Error("No session")
@@ -60,6 +60,10 @@ export async function updateUser(seenUser: updateUserType) {
             name: seenUser.name,
             username: seenUser.username,
             image: seenUser.image,
+            country: seenUser.country,
+            educationLevel: seenUser.educationLevel,
+            fieldOfStudy: seenUser.fieldOfStudy,
+            interests: seenUser.interests,
             updatedAt: new Date
         })
         .where(eq(users.id, session.user.id));

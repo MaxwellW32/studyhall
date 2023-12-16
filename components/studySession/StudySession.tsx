@@ -118,7 +118,6 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     const [viewMode, viewModeSet] = useState<"chatMode" | "videoMode" | "videoModeSmall">("chatMode")
 
-
     //handle peer events
     const mounted = useRef(false)
     useEffect(() => {
@@ -129,16 +128,19 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
         peer.on("open", () => {
             updateAndReadMembers()
+            toast.success("peer opened")
         })
 
         peer.on("close", () => {
             disconnectConnections()
+            toast.success("peer closed")
         })
 
         //receive the connections
         peer.on('connection', (conn) => {
 
             conn.on('open', () => {
+                toast.success("new connection opened")
                 console.log(`$connection open - established to `, conn.peer);
                 connectToPeer(conn.peer)//relay received connection to send connections
             });
@@ -183,6 +185,16 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
         peer.on("error", (err) => {
             console.log(`$peer err bounds`, err.message);
+
+            //delete errored peers from connected list
+            const regex = /peer (\w{8}-\w{4}-\w{4}-\w{4}-\w{12})/;
+            const match = regex.exec(err.message);
+            if (match) {
+                const extrPeerId = match[1];
+                //remove from connected list
+                sendConnections.current = sendConnections.current.filter(eachConnection => eachConnection.peer !== extrPeerId)
+                refresherSet(prev => !prev)
+            }
         })
     }, [])
 
@@ -193,18 +205,17 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         chatRef.current.scrollTop = chatRef.current.scrollHeight
     }, [chat, userWantsToScroll])
 
-    useEffect(() => {
-        // Register the event listener for beforeunload
-        window.addEventListener('beforeunload', handleUnload);
+    // Register the event listener for beforeunload
+    // useEffect(() => {
+    //     window.addEventListener('beforeunload', handleUnload);
 
-        // Clean up the event listener when the component is unmounted
-        return () => {
-            window.removeEventListener('beforeunload', handleUnload);
-            sendConnections.current.length > 0 && disconnectConnections()
-            // Additional cleanup logic if needed
-        };
-    }, []);
-
+    //     // Clean up the event listener when the component is unmounted
+    //     return () => {
+    //         window.removeEventListener('beforeunload', handleUnload);
+    //         sendConnections.current.length > 0 && disconnectConnections()
+    //         // Additional cleanup logic if needed
+    //     };
+    // }, []);
 
 
 
@@ -212,7 +223,8 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     const updateAndReadMembers = async () => {
         //write current info to server
-        await changeStudySessionsServObj(seenStudySession.id, localUserId, peer.id)
+        const firstResponse = await changeStudySessionsServObj(seenStudySession.id, localUserId, peer.id)
+        console.log(`$firstResponse`, firstResponse.complete);
 
         //check members
         const response = await readStudySessionsServObj(seenStudySession.id)
@@ -227,7 +239,6 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         }
 
         const usersFromServer = response.studySessionInfo.members
-        console.log(`$reading latest members`, usersFromServer);
 
         //connect to all other users seen
         Object.entries(usersFromServer).forEach(eachEntry => {//user id - userObjwPeer
@@ -247,17 +258,14 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     }
 
     const connectToPeer = (peerId: string) => {
-
         //only add to connArr if not there already
-        let seenInArr = false
-        sendConnections.current.forEach(eachConn => {
-            if (eachConn.peer === peerId) {
-                seenInArr = true
-            }
-        })
 
-        if (!seenInArr) sendConnections.current.push(peer.connect(peerId))
-        refresherSet(prev => !prev)
+        const inArrayCheck = sendConnections.current.find(eachConn => eachConn.peer === peerId)
+
+        if (inArrayCheck === undefined) {
+            sendConnections.current.push(peer.connect(peerId))
+            refresherSet(prev => !prev)
+        }
     }
 
     const disconnectConnections = () => {
@@ -358,6 +366,12 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     return (
         <div style={{ display: "grid" }}>
+
+            <p>Local user id {localUserId}</p>
+
+
+
+
             {userRole === ("host" || "coHost") && (
                 <Link href={`/newStudySession/edit/${seenStudySession.id}`} style={{ justifySelf: "flex-end" }}>
                     <button>Edit Study Session</button>

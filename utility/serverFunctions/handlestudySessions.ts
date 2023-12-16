@@ -119,7 +119,7 @@ export async function updateStudySession(seenStudySession: Omit<studySession, "u
 }
 
 export async function joinStudySession(studySessionId: string) {
-
+    //add signed in members to study session
     const session = await getServerSession(authOptions)
     if (!session) throw new Error("No session")
 
@@ -180,7 +180,7 @@ export async function changeStudySessionsServObj(studySessionId: string, userId:
         };
     }
 
-    // Update the peerId and version
+    // Update the peerId to the user id
     studySessionsServObj[studySessionId].members[userId].peerId = peerId;
     return { complete: "ye" }
 }

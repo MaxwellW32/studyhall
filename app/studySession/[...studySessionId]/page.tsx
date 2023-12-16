@@ -33,6 +33,7 @@ export default async function Page({ params }: { params: { studySessionId: strin
         }
     }
 
+    //user id - peer id
     if (session) {
         //join study session
         joinStudySession(foundStudySession.id)

@@ -36,34 +36,3 @@ export async function saveCommunitiesJoined(communityId: string, userId: string)
 
     saveToLocalStorage("userCommunitiesJoined", seenUserCommunitiesJoined)
 }
-
-// export function isAMemberOfCommunity(communityId: string, userId: string) {
-
-//     //read first
-//     const seenUserCommunitiesJoined: userCommunitiesJoined = retreiveFromLocalStorage("userCommunitiesJoined") ?? {}
-
-//     if (!seenUserCommunitiesJoined[userId]) return false
-
-//     let isFound = false
-//     seenUserCommunitiesJoined[userId].forEach(eachCommunityId => {
-//         if (eachCommunityId === communityId) isFound = true
-//     })
-
-//     return isFound
-// }
-
-// export async function validateUserCommunitiesJoinedObj(userId: string) {
-//     //this only runs if obj is not there in storage
-
-//     //read first
-//     const seenUserCommunitiesJoined: userCommunitiesJoined = retreiveFromLocalStorage("userCommunitiesJoined")
-
-//     if (!seenUserCommunitiesJoined) {
-//         const newUserCommObj: userCommunitiesJoined = {}
-
-//         newUserCommObj[userId] = await getMemberCommunitiesForStorageObj(userId)
-
-//         saveToLocalStorage("userCommunitiesJoined", newUserCommObj)
-//     }
-
-// }

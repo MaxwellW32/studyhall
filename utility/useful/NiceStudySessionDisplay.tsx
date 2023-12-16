@@ -32,7 +32,7 @@ export default function NiceStudySessionDisplay({ seenStudySession }: { seenStud
 
 
     return (
-        <Link className="highlightOnMouse" href={`/studySession/${seenStudySession.id}`} style={{ display: "grid", gridTemplateColumns: "50px 1fr", gap: "1rem", alignItems: "center" }}>
+        <Link className="highlightOnMouse" href={`/studySession/${seenStudySession.id}`} style={{ display: "grid", gridTemplateColumns: "50px 1fr", gap: "1rem", alignItems: "center", color: "#fff" }}>
             <div>
                 {randSvg[randSvgIndex.current]}
             </div>

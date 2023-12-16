@@ -31,7 +31,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
       return row;
     },
 
-
     async getUser(id) {
       const rows = await db
         .select()
@@ -42,7 +41,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
       return row ?? null;
     },
 
-
     async getUserByEmail(email) {
       const rows = await db
         .select()
@@ -52,7 +50,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
       const row = rows[0];
       return row ?? null;
     },
-
 
     async getUserByAccount({ providerAccountId, provider }) {
       const rows = await db
@@ -70,7 +67,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
       return row?.users ?? null;
     },
 
-
     async updateUser({ id, ...userData }) {
       if (!id) throw new Error('User not found');
       await db.update(users).set(userData).where(eq(users.id, id));
@@ -84,11 +80,9 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
       return row;
     },
 
-
     async deleteUser(userId) {
       await db.delete(users).where(eq(users.id, userId));
     },
-
 
     async linkAccount(account) {
       await db.insert(accounts).values({
@@ -107,7 +101,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
       });
     },
 
-
     async unlinkAccount({ providerAccountId, provider }) {
       await db
         .delete(accounts)
@@ -118,7 +111,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
           )
         );
     },
-
 
     async createSession(data) {
       await db.insert(sessions).values({
@@ -136,7 +128,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
       if (!row) throw new Error('User not found');
       return row;
     },
-
 
     async getSessionAndUser(sessionToken) {
       const rows = await db
@@ -167,7 +158,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
       };
     },
 
-
     async updateSession(session) {
       await db
         .update(sessions)
@@ -183,11 +173,9 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
       return row;
     },
 
-
     async deleteSession(sessionToken) {
       await db.delete(sessions).where(eq(sessions.sessionToken, sessionToken));
     },
-
 
     async createVerificationToken(verificationToken) {
       await db.insert(verificationTokens).values({
@@ -205,7 +193,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
         throw new Error('Coding bug: inserted verification token not found');
       return row;
     },
-
 
     async useVerificationToken({ identifier, token }) {
       const rows = await db
