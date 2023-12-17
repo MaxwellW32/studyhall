@@ -384,10 +384,10 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
             <div style={{ display: "flex", flexWrap: "wrap" }}>
                 <div style={{ flex: "1 1 min(600px, 100%)" }}>
                     <p>My Cam</p>
-                    <video style={{ display: myVideoConnected ? "block" : "none", aspectRatio: "19/6", width: "300px" }} ref={myVideoRef}></video>
+                    <video style={{ display: myVideoConnected ? "block" : "none", aspectRatio: "1/1", width: "min(150px,100%)", objectFit: "cover" }} ref={myVideoRef}></video>
 
                     <p>Remote videos</p>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, 300px)" }} ref={remoteVideosCont}>
+                    <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(min(250px, 100%), 1fr))`, gridAutoRows: "250px" }} ref={remoteVideosCont}>
                     </div>
 
                     {!myVideoConnected && <button onClick={makeVideoCall}>Make Video Call</button>}
