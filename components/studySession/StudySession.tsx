@@ -325,7 +325,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     //camera
     const makeVideoCall = async () => {
 
-        myVideoRef.current.muted = true //mut my video
+        // myVideoRef.current.muted = true //mut my video
 
         await turnOnWebCam()
 
@@ -354,7 +354,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     const addRemoteVideoStream = (video: HTMLVideoElement, stream: MediaStream) => {
         remoteVideosRef.current.push(video)
-        video.muted = true
+        // video.muted = true
 
         video.srcObject = stream;
 
