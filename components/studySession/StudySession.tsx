@@ -104,8 +104,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     const [refresher, refresherSet] = useState(false)
 
-    const localStream = useRef<null | MediaStream>(null);
-    const remoteStream = useRef<null | MediaStream>(null);
+    const localStream = useRef<undefined | MediaStream>(undefined);
 
     const callRef = useRef<null | MediaConnection>(null);
 
@@ -151,34 +150,31 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
             conn.on('close', () => {
                 console.log(`$seen a conn closed`, conn.peer);
+                toast.success("seen a conn closed")
                 sendConnections.current = sendConnections.current.filter(eachConnection => eachConnection.peer !== conn.peer)
                 refresherSet(prev => !prev)
             });
         });
 
         //handle video calls
-        peer.on("call", (call) => {
+        peer.on("call", async (call) => {
             callRef.current = call
+            toast.success("seeing someone calling")
 
-            console.log(`$seeing someone calling`);
-            const newVid = document.createElement("video")
+            const callerVideo = document.createElement("video")
 
-            const runit = async () => {
-                myVideoRef.current.muted = true //mut my video
-
-                localStream.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                addlocalVideoStream(myVideoRef.current, localStream.current)
-
-                call.answer(localStream.current!) //send em my data
-            }
-            runit()
+            await turnOnWebCam()
+            call.answer(localStream.current) //send em my video stream
 
             call.on("stream", (userVideoStream) => {
-                addRemoteVideoStream(newVid, userVideoStream)
+                toast.success("received the video call")
+                addRemoteVideoStream(callerVideo, userVideoStream)
             })
 
             call.on("close", () => {
-                newVid.remove()
+                callerVideo.remove()
+
+                toast.success("seen a vid close")
                 console.log(`$seen a vid close receive`);
             })
         })
@@ -268,6 +264,20 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         }
     }
 
+    const turnOnWebCam = async () => {
+        if (myVideoConnected) return
+
+        localStream.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+        myVideoRef.current.srcObject = localStream.current;
+
+        myVideoRef.current.addEventListener("loadedmetadata", () => {
+            myVideoRef.current.play()
+        })
+
+        myVideoConnectedSet(true)
+    }
+
     const disconnectConnections = () => {
         console.log(`$ran disconnect connections`);
 
@@ -287,6 +297,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         localStream.current?.getTracks().forEach(function (track) {
             track.stop();
         });
+
         myVideoConnectedSet(false)
     }
 
@@ -316,44 +327,34 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
         myVideoRef.current.muted = true //mut my video
 
-        localStream.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        addlocalVideoStream(myVideoRef.current, localStream.current)
+        await turnOnWebCam()
 
         //send data across
         sendConnections.current.forEach(eachConnection => {
-            callNewUser(eachConnection.peer, localStream.current!)
+            if (localStream.current === undefined) return
+
+            callRef.current = peer.call(eachConnection.peer, localStream.current);
+
+            const remoteVideo = document.createElement("video")
+
+            callRef.current.on("stream", (remoteVideoStream) => {
+                console.log(`$remoteVideoStream`, remoteVideoStream);
+                toast.success("adding new video stream")
+                addRemoteVideoStream(remoteVideo, remoteVideoStream)
+            })
+
+            callRef.current.on("close", () => {
+                remoteVideo.remove()
+
+                toast.success("seen a video closed")
+                console.log(`$seen a vid close send`);
+            })
         })
-    }
-
-    const callNewUser = (userId: string, stream: MediaStream) => {
-        const call = peer.call(userId, stream);
-        callRef.current = call
-
-        const newVid = document.createElement("video")
-
-        call.on("stream", (remoteVideoStream) => {
-            addRemoteVideoStream(newVid, remoteVideoStream)
-        })
-
-        call.on("close", () => {
-            newVid.remove()
-
-            console.log(`$seen a vid close send`);
-        })
-    }
-
-    const addlocalVideoStream = (video: HTMLVideoElement, stream: MediaStream) => {
-        video.srcObject = stream;
-
-        video.addEventListener("loadedmetadata", () => {
-            video.play()
-        })
-
-        myVideoConnectedSet(true)
     }
 
     const addRemoteVideoStream = (video: HTMLVideoElement, stream: MediaStream) => {
         remoteVideosRef.current.push(video)
+        video.muted = true
 
         video.srcObject = stream;
 
@@ -365,59 +366,57 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     }
 
     return (
-        <div style={{ display: "grid" }}>
+        <div style={{ display: "grid", gridTemplateRows: "auto 1fr" }}>
+            <div style={{ display: "flex", padding: "1rem", gap: "1rem", alignItems: "center", height: "4rem" }}>
+                {sendConnections.current.length > 0 && (
+                    <>
+                        <p style={{ color: "#0f0" }}>{sendConnections.current.length} {sendConnections.current.length === 1 ? "other person" : "People"} online</p>
+                        <p onClick={disconnectConnections}>Disconnect</p>
+                    </>
+                )}
 
-            <p>Local user id {localUserId}</p>
-
-
-
-
-            {userRole === ("host" || "coHost") && (
-                <Link href={`/newStudySession/edit/${seenStudySession.id}`} style={{ justifySelf: "flex-end" }}>
-                    <button>Edit Study Session</button>
-                </Link>
-            )}
-
-            {sendConnections.current.length > 0 && (
-                <div>
-                    <p style={{ color: "#0f0" }}>{sendConnections.current.length} {sendConnections.current.length === 1 ? "other person" : "People"} online</p>
-                    <button onClick={disconnectConnections}>Disconnect</button>
-                </div>
-            )}
-
-            <div style={{ backgroundColor: "#999", height: "60vh", display: "grid", gridTemplateRows: "5fr 1fr" }}>
-                <div ref={chatRef} style={{ display: "grid", gap: ".5rem", overflowY: "auto", gridAutoRows: "70px", padding: "1rem" }}
-                    onScroll={() => {
-                        const calcScrollTop = chatRef.current.scrollHeight - chatRef.current.clientHeight
-                        const isAtBottom = calcScrollTop > (chatRef.current.scrollTop - 10) && calcScrollTop < (chatRef.current.scrollTop + 10)
-
-                        // Update state based on user scroll position
-                        userWantsToScrollSet(!isAtBottom);
-                    }}>
-                    {chat.map((eachMessage, eachMessageIndex) => {
-                        return <p style={{ backgroundColor: "#fff", color: "#000", padding: "1rem" }} key={eachMessageIndex}>{eachMessage}</p>
-                    })}
-                </div>
-
-                <div style={{ marginLeft: "1rem" }}>
-                    <input value={currentMessage} onChange={(e) => { currentMessageSet(e.target.value) }} onKeyDown={(e) => { if (e.key === "Enter") sendMessage() }} type="text" placeholder="Enter your message" />
-
-                    <button onClick={sendMessage}>Send Message</button>
-                </div>
+                {userRole === ("host" || "coHost") && (
+                    <Link href={`/newStudySession/edit/${seenStudySession.id}`} style={{ marginLeft: "auto" }}>
+                        <svg style={{ fill: "#000" }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z" /></svg>
+                    </Link>
+                )}
             </div>
 
-            {myVideoConnected && <button onClick={disconnectVideo}>Close Video</button>}
+            <div style={{ display: "flex", flexWrap: "wrap" }}>
+                <div style={{ flex: "1 1 min(600px, 100%)" }}>
+                    <p>My Cam</p>
+                    <video style={{ display: myVideoConnected ? "block" : "none", aspectRatio: "19/6", width: "300px" }} ref={myVideoRef}></video>
 
-            <div>
-                <p>My Cam</p>
-                <video style={{ display: myVideoConnected ? "block" : "none", aspectRatio: "19/6", width: "300px" }} ref={myVideoRef}></video>
+                    <p>Remote videos</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, 300px)" }} ref={remoteVideosCont}>
+                    </div>
 
-                <p>Remote videos</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, 300px)" }} ref={remoteVideosCont}>
+                    {!myVideoConnected && <button onClick={makeVideoCall}>Make Video Call</button>}
+                    {myVideoConnected && <button onClick={disconnectVideo}>Close Video</button>}
+                </div>
+
+                <div style={{ flex: "1 1 min(250px, 100%)", backgroundColor: "#999", display: "grid", gridTemplateRows: "1fr auto" }}>
+                    <div ref={chatRef} style={{ display: "grid", gap: ".5rem", overflowY: "auto", gridAutoRows: "70px", padding: "1rem" }}
+                        onScroll={() => {
+                            const calcScrollTop = chatRef.current.scrollHeight - chatRef.current.clientHeight
+                            const isAtBottom = calcScrollTop > (chatRef.current.scrollTop - 10) && calcScrollTop < (chatRef.current.scrollTop + 10)
+
+                            // Update state based on user scroll position
+                            userWantsToScrollSet(!isAtBottom);
+                        }}>
+
+                        {chat.map((eachMessage, eachMessageIndex) => {
+                            return <p style={{ backgroundColor: "#fff", color: "#000", padding: "1rem" }} key={eachMessageIndex}>{eachMessage}</p>
+                        })}
+                    </div>
+
+                    <div style={{}}>
+                        <input value={currentMessage} onChange={(e) => { currentMessageSet(e.target.value) }} onKeyDown={(e) => { if (e.key === "Enter") sendMessage() }} type="text" placeholder="Enter your message" />
+
+                        <button style={{ margin: ".5rem" }} onClick={sendMessage}>Send Message</button>
+                    </div>
                 </div>
             </div>
-
-            <button onClick={makeVideoCall}>WebCam Bttn</button>
         </div>
     );
 }
