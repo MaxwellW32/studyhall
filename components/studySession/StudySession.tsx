@@ -2,7 +2,7 @@
 
 import { authorizedMemberList, studySession, user } from '@/types'
 import styles from "./page.module.css";
-import { useEffect, useMemo, useRef, useState } from "react";
+import react, { useEffect, useMemo, useRef, useState } from "react";
 import { Peer } from "peerjs";
 import type { DataConnection, MediaConnection } from "peerjs";
 import { v4 as uuidV4 } from "uuid"
@@ -383,11 +383,13 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
             <div style={{ display: "flex", flexWrap: "wrap" }}>
                 <div style={{ flex: "1 1 min(600px, 100%)" }}>
-                    <p>My Cam</p>
-                    <video style={{ display: myVideoConnected ? "block" : "none", aspectRatio: "1/1", width: "min(150px,100%)", objectFit: "cover" }} ref={myVideoRef}></video>
 
-                    <p>Remote videos</p>
+                    {myVideoConnected && <p>My Cam</p>}
+                    <video style={{ display: !myVideoConnected ? "none" : "", aspectRatio: "1/1", width: "min(150px,100%)", objectFit: "cover" }} ref={myVideoRef}></video>
+
+
                     <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(min(250px, 100%), 1fr))`, gridAutoRows: "250px" }} ref={remoteVideosCont}>
+                        {remoteVideosCont.current?.childNodes.length > 0 && <p>Remote videos</p>}
                     </div>
 
                     {!myVideoConnected && <button onClick={makeVideoCall}>Make Video Call</button>}
