@@ -409,10 +409,10 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
                         })}
                     </div>
 
-                    <div style={{}}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto" }}>
                         <input value={currentMessage} onChange={(e) => { currentMessageSet(e.target.value) }} onKeyDown={(e) => { if (e.key === "Enter") sendMessage() }} type="text" placeholder="Enter your message" />
 
-                        <button style={{ margin: ".5rem" }} onClick={sendMessage}>Send Message</button>
+                        <button style={{}} onClick={sendMessage}>Send</button>
                     </div>
                 </div>
             </div>
