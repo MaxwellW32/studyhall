@@ -385,7 +385,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
             <div style={{ display: "flex", flexWrap: "wrap" }}>
                 {/* videos */}
                 <div style={{ flex: "2 1 min(600px, 100%)", maxHeight: "70vh", overflowY: "auto" }}>
-                    {true && (
+                    {!myVideoConnected && (
                         <div onClick={makeVideoCall} style={{ display: "flex", gap: ".5rem", alignItems: "center", paddingLeft: "1rem   " }}>
                             <p>Video Call</p>
 
