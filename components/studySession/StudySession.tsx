@@ -397,7 +397,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
                 </div>
 
                 <div style={{ flex: "1 1 min(250px, 100%)", backgroundColor: "#999", display: "grid", gridTemplateRows: "1fr auto" }}>
-                    <div ref={chatRef} style={{ display: "grid", gap: ".5rem", overflowY: "auto", gridAutoRows: "70px", padding: "1rem" }}
+                    <div ref={chatRef} style={{ maxHeight: "60vh", overflowY: "auto", border: "1px solid #000" }}
                         onScroll={() => {
                             const calcScrollTop = chatRef.current.scrollHeight - chatRef.current.clientHeight
                             const isAtBottom = calcScrollTop > (chatRef.current.scrollTop - 10) && calcScrollTop < (chatRef.current.scrollTop + 10)
@@ -407,12 +407,12 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
                         }}>
 
                         {chat.map((eachMessage, eachMessageIndex) => {
-                            return <p style={{ backgroundColor: "#fff", color: "#000", padding: "1rem" }} key={eachMessageIndex}>{eachMessage}</p>
+                            return <p style={{ backgroundColor: "#fff", color: "#000", padding: "1rem", borderTop: "1px solid #000" }} key={eachMessageIndex}>{eachMessage}</p>
                         })}
                     </div>
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr auto" }}>
-                        <input value={currentMessage} onChange={(e) => { currentMessageSet(e.target.value) }} onKeyDown={(e) => { if (e.key === "Enter") sendMessage() }} type="text" placeholder="Enter your message" />
+                        <input value={currentMessage} onChange={(e) => { currentMessageSet(e.target.value) }} onKeyDown={(e) => { if (e.key === "Enter" && currentMessage !== "") sendMessage() }} type="text" placeholder="Enter your message" />
 
                         <button style={{}} onClick={sendMessage}>Send</button>
                     </div>
