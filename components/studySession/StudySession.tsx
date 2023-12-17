@@ -265,11 +265,11 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     }
 
     const turnOnWebCam = async () => {
-        if (myVideoConnected) return
-
         localStream.current = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
         myVideoRef.current.srcObject = localStream.current;
+
+        myVideoRef.current.muted = true
 
         myVideoRef.current.addEventListener("loadedmetadata", () => {
             myVideoRef.current.play()
@@ -354,7 +354,6 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     const addRemoteVideoStream = (video: HTMLVideoElement, stream: MediaStream) => {
         remoteVideosRef.current.push(video)
-        // video.muted = true
 
         video.srcObject = stream;
 
