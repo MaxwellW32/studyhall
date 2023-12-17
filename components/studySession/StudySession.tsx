@@ -366,7 +366,8 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     return (
         <div style={{ display: "grid", gridTemplateRows: "auto 1fr" }}>
-            <div style={{ display: "flex", padding: "1rem", gap: "1rem", alignItems: "center", height: "4rem" }}>
+            {/* top menu */}
+            <div style={{ display: "flex", padding: "1rem", gap: "1rem", alignItems: "center", height: "3rem", borderBottom: "1px solid #000" }}>
                 {sendConnections.current.length > 0 && (
                     <>
                         <p style={{ color: "#0f0" }}>{sendConnections.current.length} {sendConnections.current.length === 1 ? "other person" : "People"} online</p>
@@ -382,22 +383,28 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
             </div>
 
             <div style={{ display: "flex", flexWrap: "wrap" }}>
-                <div style={{ flex: "1 1 min(600px, 100%)" }}>
+                {/* videos */}
+                <div style={{ flex: "2 1 min(600px, 100%)", maxHeight: "70vh", overflowY: "auto" }}>
+                    {true && (
+                        <div onClick={makeVideoCall} style={{ display: "flex", gap: ".5rem", alignItems: "center", paddingLeft: "1rem   " }}>
+                            <p>Video Call</p>
+
+                            <svg style={{ fill: "#000" }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M0 128C0 92.7 28.7 64 64 64H320c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128zM559.1 99.8c10.4 5.6 16.9 16.4 16.9 28.2V384c0 11.8-6.5 22.6-16.9 28.2s-23 5-32.9-1.6l-96-64L416 337.1V320 192 174.9l14.2-9.5 96-64c9.8-6.5 22.4-7.2 32.9-1.6z" /></svg>
+                        </div>
+                    )}
+                    {myVideoConnected && <button onClick={disconnectVideo}>Close Video</button>}
 
                     {myVideoConnected && <p>My Cam</p>}
                     <video style={{ display: !myVideoConnected ? "none" : "", aspectRatio: "1/1", width: "min(150px,100%)", objectFit: "cover" }} ref={myVideoRef}></video>
 
 
-                    <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(min(250px, 100%), 1fr))`, gridAutoRows: "250px" }} ref={remoteVideosCont}>
-                        {remoteVideosCont.current?.childNodes.length > 0 && <p>Remote videos</p>}
+                    <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(min(250px, 100%), 1fr))`, gridAutoRows: "250px", columnGap: "1rem" }} ref={remoteVideosCont}>
                     </div>
-
-                    {!myVideoConnected && <button onClick={makeVideoCall}>Make Video Call</button>}
-                    {myVideoConnected && <button onClick={disconnectVideo}>Close Video</button>}
                 </div>
 
+                {/* chat */}
                 <div style={{ flex: "1 1 min(250px, 100%)", backgroundColor: "#999", display: "grid", gridTemplateRows: "1fr auto" }}>
-                    <div ref={chatRef} style={{ maxHeight: "60vh", overflowY: "auto", border: "1px solid #000" }}
+                    <div ref={chatRef} style={{ maxHeight: "70vh", overflowY: "auto", border: "1px solid #000", borderTop: "none" }}
                         onScroll={() => {
                             const calcScrollTop = chatRef.current.scrollHeight - chatRef.current.clientHeight
                             const isAtBottom = calcScrollTop > (chatRef.current.scrollTop - 10) && calcScrollTop < (chatRef.current.scrollTop + 10)
