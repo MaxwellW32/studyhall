@@ -10,10 +10,30 @@ import { retreiveFromLocalStorage, saveToLocalStorage } from '@/utility/savestor
 import { changeStudySessionsServObj, readStudySessionsServObj, removeUserFromstudySessionsServObj } from '@/utility/serverFunctions/handlestudySessions';
 import { wait } from '@/utility/useful/NiceFunctions';
 import { toast } from 'react-hot-toast';
-import { inProduction } from '@/utility/globalState';
+import { defaultImage, inProduction } from '@/utility/globalState';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { authOptions } from '@/lib/auth/auth-options';
+import { Session } from 'next-auth';
+import Moment from 'react-moment';
+import Image from 'next/image';
+import { useQueries, useQuery } from '@tanstack/react-query';
+import { getSpecificUser } from '@/utility/serverFunctions/handleUsers';
 
-export default function StudySession({ seenStudySession, signedInUserId }: { seenStudySession: studySession, signedInUserId?: string }) {
+
+
+type chatMessage = {
+    message: string,
+    postedBy: Pick<user, "id" | "name" | "image" | "username">,
+    datePosted: Date,
+    additionalMedia: Uint8Array | null
+    authenticated: boolean,
+}
+
+
+export default function StudySession({ seenStudySession, session }: { seenStudySession: studySession, session?: Session }) {
+    //have a local object
+    //will have username, picture
     const [peer] = useState<Peer>(() => {
 
         if (inProduction) return new Peer
@@ -35,7 +55,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     // const [roomFull, roomFullSet] = useState(false)
 
     const [currentMessage, currentMessageSet] = useState("")
-    const [chat, chatSet] = useState<string[]>([])
+    const [chat, chatSet] = useState<chatMessage[]>([])
 
     const authorizedMemberList = useMemo<authorizedMemberList | null>(() => {
         return seenStudySession.authorizedMemberList ? JSON.parse(seenStudySession.authorizedMemberList) : null
@@ -44,8 +64,8 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
     const [localUserId] = useState(() => {
         let localid = ""
 
-        if (signedInUserId) {
-            localid = signedInUserId
+        if (session) {
+            localid = session.user.id
         } else {
             const seenIdFromStorage = retreiveFromLocalStorage("localUserId")
 
@@ -66,10 +86,17 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         return localid
     })
 
+    // const seenUser = {}
+    const { data: seenUser } = useQuery({
+        queryKey: ["seenUserStudySession"],
+        queryFn: () => session ? getSpecificUser(session.user.id, "id") : null,
+        refetchOnWindowFocus: false
+    })
+
     const userRole = useMemo<"host" | "coHost" | "normal">(() => {
         //no list everyone is normal except host
         if (!authorizedMemberList) {
-            if (signedInUserId && signedInUserId === seenStudySession.userId) {
+            if (session && session.user.id === seenStudySession.userId) {
                 return "host"
             } else {
                 return "normal"
@@ -82,7 +109,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         }
 
         //host was not specific on auth list - give host
-        if (signedInUserId === seenStudySession.userId && authorizedMemberList[seenStudySession.userId] === undefined) {
+        if (session && session.user.id === seenStudySession.userId && authorizedMemberList[seenStudySession.userId] === undefined) {
             return "host"
         }
 
@@ -117,6 +144,11 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
     const [viewMode, viewModeSet] = useState<"chatMode" | "videoMode" | "videoModeSmall">("chatMode")
 
+    const [blobUploaded, blobUploadedSet] = useState<Blob | null>(null)
+    const [showingMoreOptionsMenu, showingMoreOptionsMenuSet] = useState(false)
+
+
+
     //handle peer events
     const mounted = useRef(false)
     useEffect(() => {
@@ -145,7 +177,11 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
             });
 
             conn.on('data', (data) => {
-                chatSet(prevMessages => [...prevMessages, data as string])
+                console.log(`$seen data`, data);
+
+                if (data) {
+                    chatSet(prevMessages => [...prevMessages, data as chatMessage])
+                }
             });
 
             conn.on('close', () => {
@@ -244,13 +280,30 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
         })
     }
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
+        const usableMessage: chatMessage = {
+            message: currentMessage,
+            datePosted: new Date,
+            authenticated: seenUser ? true : false,
+            additionalMedia: blobUploaded ? new Uint8Array(await blobUploaded.arrayBuffer()) : null,
+            postedBy: {
+                id: localUserId,
+                image: seenUser?.image ?? null,
+                username: seenUser?.username ?? "Anon",
+                name: session?.user.name ?? "Anonymous Joe"
+            }
+        }
+
+        console.log(`$sent data`, usableMessage);
+
         sendConnections.current.forEach(eachConnection => {
-            eachConnection.send(currentMessage);
+            eachConnection.send(usableMessage);
         })
 
-        chatSet(prevMessages => [...prevMessages, currentMessage])
+        chatSet(prevMessages => [...prevMessages, usableMessage])
         currentMessageSet("")
+
+        blobUploadedSet(null)
     }
 
     const connectToPeer = (peerId: string) => {
@@ -322,6 +375,7 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
 
 
+
     //camera
     const makeVideoCall = async () => {
 
@@ -363,6 +417,8 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
 
         remoteVideosCont.current.append(video)
     }
+
+
 
     return (
         <div style={{ display: "grid", gridTemplateRows: "auto 1fr" }}>
@@ -413,13 +469,78 @@ export default function StudySession({ seenStudySession, signedInUserId }: { see
                             userWantsToScrollSet(!isAtBottom);
                         }}>
 
-                        {chat.map((eachMessage, eachMessageIndex) => {
-                            return <p style={{ backgroundColor: "#fff", color: "#000", padding: "1rem", borderTop: "1px solid #000" }} key={eachMessageIndex}>{eachMessage}</p>
+                        {chat.map((chatObj, eachMessageIndex) => {
+                            console.log(`$chatObj`, chatObj);
+
+                            let blob = chatObj.additionalMedia ? new Blob([chatObj.additionalMedia], { type: "image/jpeg" }) : null;
+                            let imageUrl = blob ? URL.createObjectURL(blob) : null;
+
+
+                            return (
+                                <div style={{ backgroundColor: "#fff", color: "#000", padding: "1rem", borderTop: "1px solid #000" }} key={eachMessageIndex}>
+                                    <p style={{ textAlign: "end" }}><Moment fromNow>{chatObj.datePosted}</Moment></p>
+
+
+                                    <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: ".5rem" }}>
+                                        <Image style={{ aspectRatio: "1/1", width: "2rem", borderRadius: "50%" }} width={400} height={400} alt={`${chatObj.postedBy.name}'s profile pic`} src={chatObj.postedBy.image ?? defaultImage} />
+
+                                        <div>
+                                            <p style={{ color: chatObj.authenticated ? "gold" : "" }}>{chatObj.postedBy.username}</p>
+
+                                            {chatObj.additionalMedia !== null && (
+                                                <>
+                                                    <img src={imageUrl!} alt="sent image" style={{ aspectRatio: "1/1", width: "100%", objectFit: "cover" }} />
+
+                                                    {/* {chatObj.additionalMedia.type.startsWith(`audio/`) ? (<></>) : null}
+                                                    {chatObj.additionalMedia.type.startsWith(`video/`) ? (<></>) : null}
+                                                    {chatObj.additionalMedia.type.startsWith(`application/`) ? (<></>) : null} */}
+                                                </>
+                                            )}
+
+                                            <p>{chatObj.message}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
                         })}
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto" }}>
-                        <input value={currentMessage} onChange={(e) => { currentMessageSet(e.target.value) }} onKeyDown={(e) => { if (e.key === "Enter" && currentMessage !== "") sendMessage() }} type="text" placeholder="Enter your message" />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", position: "relative" }}>
+                        {blobUploaded && (
+                            <div style={{ position: "absolute", top: 0, left: "3rem", padding: "1rem", translate: "0 -100%", height: "10rem", backgroundColor: "wheat" }}>
+                                {blobUploaded.type.startsWith(`image/`) ? (
+                                    <>
+                                        <img src={URL.createObjectURL(blobUploaded)} alt="F2ile Preview" style={{ maxHeight: '100%', objectFit: "cover" }} />
+                                    </>
+                                ) : null}
+
+                                {blobUploaded.type.startsWith(`audio/`) ? (<></>) : null}
+                                {blobUploaded.type.startsWith(`video/`) ? (<></>) : null}
+                                {blobUploaded.type.startsWith(`application/`) ? (<></>) : null}
+                            </div>
+                        )}
+
+                        <div onClick={() => showingMoreOptionsMenuSet(prev => !prev)} style={{ position: "absolute", top: 0, left: 0, padding: "1rem", backgroundColor: "beige", translate: "0 -100%", display: "flex", gap: "1rem" }}>
+                            <svg style={{ display: showingMoreOptionsMenu ? "none" : "", fill: "#000" }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" /></svg>
+
+                            <div style={{ display: !showingMoreOptionsMenu ? "none" : "", }}>
+                                <input type="file" placeholder='Upload' onChange={(e) => {
+                                    if (!e.target.files) return
+
+                                    const uploadedFile = e.target.files[0]
+                                    const blob = new Blob([uploadedFile], { type: uploadedFile.type })
+
+                                    console.log(`$uploadedFile`, uploadedFile);
+
+                                    blobUploadedSet(blob);
+                                }} />
+                            </div>
+                        </div>
+
+                        <input value={currentMessage} onChange={(e) => { currentMessageSet(e.target.value) }}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && currentMessage !== "") sendMessage()
+                            }} type="text" placeholder="Enter your message" />
 
                         <button style={{}} onClick={sendMessage}>Send</button>
                     </div>

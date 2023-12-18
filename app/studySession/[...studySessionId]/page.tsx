@@ -39,5 +39,5 @@ export default async function Page({ params }: { params: { studySessionId: strin
         joinStudySession(foundStudySession.id)
     }
 
-    return <StudySession seenStudySession={foundStudySession} signedInUserId={session ? session.user.id : undefined} />
+    return <StudySession seenStudySession={foundStudySession} session={session ? session : undefined} />
 }
