@@ -28,7 +28,8 @@ type chatMessage = {
     datePosted: Date,
     additionalMedia: {
         data: Uint8Array,
-        type: string
+        type: string,
+        name: string
     } | null
     authenticated: boolean,
 }
@@ -147,7 +148,10 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
 
     const [viewMode, viewModeSet] = useState<"chatMode" | "videoMode" | "videoModeSmall">("chatMode")
 
-    const [blobUploaded, blobUploadedSet] = useState<Blob | null>(null)
+    const [blobUploaded, blobUploadedSet] = useState<{
+        data: Blob,
+        name: string,
+    } | null>(null)
     const [showingMoreOptionsMenu, showingMoreOptionsMenuSet] = useState(false)
 
 
@@ -289,8 +293,9 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
             datePosted: new Date,
             authenticated: seenUser ? true : false,
             additionalMedia: blobUploaded ? {
-                data: new Uint8Array(await blobUploaded.arrayBuffer()),
-                type: blobUploaded.type
+                data: new Uint8Array(await blobUploaded.data.arrayBuffer()),
+                type: blobUploaded.data.type,
+                name: blobUploaded.name
             } : null,
             postedBy: {
                 id: localUserId,
@@ -425,7 +430,6 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
     }
 
 
-
     return (
         <div style={{ display: "grid", gridTemplateRows: "auto 1fr" }}>
             {/* top menu */}
@@ -478,10 +482,13 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
                         {chat.map((chatObj, eachMessageIndex) => {
                             console.log(`$chatObj`, chatObj);
 
-                            let blob = chatObj.additionalMedia ? new Blob([chatObj.additionalMedia.data], { type: chatObj.additionalMedia.type }) : null;
-                            console.log(`$seen blobl `, blob);
-                            let imageUrl = blob ? URL.createObjectURL(blob) : null;
+                            let blobObj = chatObj.additionalMedia ? {
+                                data: new Blob([chatObj.additionalMedia.data], { type: chatObj.additionalMedia.type }),
+                                name: chatObj.additionalMedia.name
+                            } : null;
 
+
+                            console.log(`$blob`, blobObj);
 
                             return (
                                 <div style={{ backgroundColor: "#fff", color: "#000", padding: "1rem", borderTop: "1px solid #000" }} key={eachMessageIndex}>
@@ -494,9 +501,17 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
                                         <div>
                                             <p style={{ color: chatObj.authenticated ? "gold" : "" }}>{chatObj.postedBy.username}</p>
 
-                                            {chatObj.additionalMedia !== null && (
+                                            {blobObj !== null && (
                                                 <>
-                                                    <img src={imageUrl!} alt="sent image" style={{ height: "auto", width: "100%" }} />
+                                                    {blobObj.data.type.startsWith(`image/`) ? (
+                                                        <>
+                                                            <img src={URL.createObjectURL(blobObj.data)} alt={`${blobObj.name} image sent`} style={{ height: "auto", width: "100%" }} />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <a href={URL.createObjectURL(blobObj.data)} download="file">{blobObj.name} - download</a>
+                                                        </>
+                                                    )}
 
                                                     {/* {chatObj.additionalMedia.type.startsWith(`audio/`) ? (<></>) : null}
                                                     {chatObj.additionalMedia.type.startsWith(`video/`) ? (<></>) : null}
@@ -512,36 +527,52 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
                         })}
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", position: "relative" }}>
+                    {/* input */}
+                    <div style={{ display: "grid", gridTemplateColumns: "3rem 1fr auto", position: "relative", alignItems: "center" }}>
                         {blobUploaded && (
                             <div style={{ position: "absolute", top: 0, left: "3rem", padding: "1rem", translate: "0 -100%", height: "10rem", backgroundColor: "wheat" }}>
-                                {blobUploaded.type.startsWith(`image/`) ? (
+                                {blobUploaded.data.type.startsWith(`image/`) ? (
                                     <>
-                                        <img src={URL.createObjectURL(blobUploaded)} alt="F2ile Preview" style={{ maxHeight: '100%', objectFit: "cover" }} />
+                                        <img src={URL.createObjectURL(blobUploaded.data)} alt={`${blobUploaded.name} preview`} style={{ maxHeight: '100%', objectFit: "cover" }} />
                                     </>
-                                ) : null}
+                                ) : (
+                                    <>
+                                        <a href={URL.createObjectURL(blobUploaded.data)} download="file">{blobUploaded.name} - download</a>
+                                    </>
+                                )}
 
-                                {blobUploaded.type.startsWith(`audio/`) ? (<></>) : null}
-                                {blobUploaded.type.startsWith(`video/`) ? (<></>) : null}
-                                {blobUploaded.type.startsWith(`application/`) ? (<></>) : null}
+                                {/* {blobUploaded.data.type.startsWith(`audio/`) ? (<></>) : null}
+                                {blobUploaded.data.type.startsWith(`video/`) ? (<></>) : null}
+                                {blobUploaded.data.type.startsWith(`application/`) ? (<></>) : null} */}
                             </div>
                         )}
 
-                        <div onClick={() => showingMoreOptionsMenuSet(prev => !prev)} style={{ position: "absolute", top: 0, left: 0, padding: "1rem", backgroundColor: "beige", translate: "0 -100%", display: "flex", gap: "1rem" }}>
-                            <svg style={{ display: showingMoreOptionsMenu ? "none" : "", fill: "#000" }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" /></svg>
 
-                            <div style={{ display: !showingMoreOptionsMenu ? "none" : "", }}>
-                                <input type="file" placeholder='Upload' onChange={(e) => {
-                                    if (!e.target.files) return
 
-                                    const uploadedFile = e.target.files[0]
-                                    const blob = new Blob([uploadedFile], { type: uploadedFile.type })
+                        <div onClick={() => showingMoreOptionsMenuSet(prev => !prev)} style={{ display: !showingMoreOptionsMenu ? "none" : "", position: "absolute", top: 0, left: 0, padding: "1rem", backgroundColor: "beige", translate: "0 -100%", gap: "1rem" }}>
+                            <input type="file" placeholder='Upload' onChange={(e) => {
+                                if (!e.target.files) return
 
-                                    console.log(`$uploadedFile`, uploadedFile);
+                                const uploadedFile = e.target.files[0]
+                                const blob = new Blob([uploadedFile], { type: uploadedFile.type })
 
-                                    blobUploadedSet(blob);
-                                }} />
-                            </div>
+                                console.log(`$uploadedFile`, uploadedFile);
+
+                                blobUploadedSet(prev => {
+                                    if (prev) {
+                                        prev.data = blob
+                                        prev.name = uploadedFile.name
+
+                                        return { ...prev }
+                                    } else {
+                                        return { data: blob, name: uploadedFile.name }
+                                    }
+                                });
+                            }} />
+                        </div>
+
+                        <div onClick={() => showingMoreOptionsMenuSet(prev => !prev)} style={{ backgroundColor: "#222", height: "100%", width: "100%", padding: ".5rem", display: "grid", alignItems: "center", justifyItems: "center" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" /></svg>
                         </div>
 
                         <input value={currentMessage} onChange={(e) => { currentMessageSet(e.target.value) }}
