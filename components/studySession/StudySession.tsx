@@ -26,7 +26,10 @@ type chatMessage = {
     message: string,
     postedBy: Pick<user, "id" | "name" | "image" | "username">,
     datePosted: Date,
-    additionalMedia: Uint8Array | null
+    additionalMedia: {
+        data: Uint8Array,
+        type: string
+    } | null
     authenticated: boolean,
 }
 
@@ -285,7 +288,10 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
             message: currentMessage,
             datePosted: new Date,
             authenticated: seenUser ? true : false,
-            additionalMedia: blobUploaded ? new Uint8Array(await blobUploaded.arrayBuffer()) : null,
+            additionalMedia: blobUploaded ? {
+                data: new Uint8Array(await blobUploaded.arrayBuffer()),
+                type: blobUploaded.type
+            } : null,
             postedBy: {
                 id: localUserId,
                 image: seenUser?.image ?? null,
@@ -301,8 +307,8 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
         })
 
         chatSet(prevMessages => [...prevMessages, usableMessage])
-        currentMessageSet("")
 
+        currentMessageSet("")
         blobUploadedSet(null)
     }
 
@@ -472,7 +478,8 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
                         {chat.map((chatObj, eachMessageIndex) => {
                             console.log(`$chatObj`, chatObj);
 
-                            let blob = chatObj.additionalMedia ? new Blob([chatObj.additionalMedia], { type: "image/jpeg" }) : null;
+                            let blob = chatObj.additionalMedia ? new Blob([chatObj.additionalMedia.data], { type: chatObj.additionalMedia.type }) : null;
+                            console.log(`$seen blobl `, blob);
                             let imageUrl = blob ? URL.createObjectURL(blob) : null;
 
 
@@ -489,7 +496,7 @@ export default function StudySession({ seenStudySession, session }: { seenStudyS
 
                                             {chatObj.additionalMedia !== null && (
                                                 <>
-                                                    <img src={imageUrl!} alt="sent image" style={{ aspectRatio: "1/1", width: "100%", objectFit: "cover" }} />
+                                                    <img src={imageUrl!} alt="sent image" style={{ height: "auto", width: "100%" }} />
 
                                                     {/* {chatObj.additionalMedia.type.startsWith(`audio/`) ? (<></>) : null}
                                                     {chatObj.additionalMedia.type.startsWith(`video/`) ? (<></>) : null}
