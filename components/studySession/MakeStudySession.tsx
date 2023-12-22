@@ -86,9 +86,9 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
 
 
     return (
-        <div style={{ display: "grid" }}>
+        <div style={{ display: "grid", padding: "3rem 1rem", gap: "1rem" }}>
 
-            {oldStudySession ? <h3>Update study session</h3> : <h3>create a new study session</h3>}
+            {oldStudySession ? <h1>Update study session</h1> : <h1>Create a new study session</h1>}
 
             <label htmlFor='studySession'>StudySession Name</label>
             <input id='studySession' value={studySessionObj.name}
@@ -102,23 +102,24 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
                 placeholder='Enter a name you like'
             />
 
-            <label>Anyone can join?</label>
-            <button onClick={() => {
+            <label htmlFor='checkid'>Anyone can join?</label>
+            <input id='checkid' type="checkbox" checked={studySessionObj.allowAll} onChange={() => {
                 studySessionObjSet((prevObj) => {
                     const newObj = { ...prevObj }
                     newObj.allowAll = !newObj.allowAll
                     return newObj
                 })
-            }}>{studySessionObj.allowAll.toString()}</button>
+            }} />
 
-            <label>List Publicly?</label>
-            <button onClick={() => {
+
+            <label htmlFor='checkidpub'>List Publicly?</label>
+            <input id='checkidpub' type="checkbox" checked={studySessionObj.isPublic} onChange={() => {
                 studySessionObjSet((prevObj) => {
                     const newObj = { ...prevObj }
                     newObj.isPublic = !newObj.isPublic
                     return newObj
                 })
-            }}>{studySessionObj.isPublic.toString()}</button>
+            }} />
 
 
 
@@ -166,8 +167,6 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
                 }}>Search</button>
             </div>
 
-
-
             {authorizedMemberList && (
                 <div style={{ display: "grid", gap: "1rem" }}>
                     {Object.entries(authorizedMemberList).map((eachAuthMemberEntry) => {
@@ -208,9 +207,7 @@ export default function MakeStudySession({ oldStudySession }: { oldStudySession?
                 </div>
             )}
 
-
-
-            <button onClick={handleSubmit}>Submit</button>
+            <button style={{ justifySelf: "center", padding: "1rem 3rem" }} onClick={handleSubmit}>Submit</button>
         </div>
     )
 }
