@@ -25,6 +25,7 @@ export default async function RootLayout({ children, }: { children: React.ReactN
           <QueryWrapper>
             <Toaster position="top-center" reverseOrder={false} />
             <AtomLoader />
+            {/* no need for this anymore */}
             <NavBar seenUser={session ? await getSpecificUser(session.user.id, "id") : undefined} />
             {children}
           </QueryWrapper>

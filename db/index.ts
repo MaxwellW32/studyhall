@@ -8,7 +8,6 @@ const connection = connect({
 
 export const db = drizzle(connection);
 export const usableDb = drizzle(connection, { schema });
-
 // , { schema }
 
 
